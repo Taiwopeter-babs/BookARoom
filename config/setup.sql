@@ -38,9 +38,7 @@ CREATE TABLE IF NOT EXISTS guests (
     city VARCHAR(128) NOT NULL,
     state VARCHAR(128) NOT NULL,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    bookingId INT NOT NULL,
-    CONSTRAINT fk_booking FOREIGN KEY(bookingId) REFERENCES bookings(id)
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- bookings
@@ -48,7 +46,9 @@ CREATE TABLE IF NOT EXISTS bookings (
     id SERIAL PRIMARY KEY,
     checkinDate TIMESTAMP NOT NULL,
     checkoutDate TIMESTAMP NOT NULL,
-    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    guestId INT NOT NULL,
+    CONSTRAINT fk_guest FOREIGN KEY(guestId) REFERENCES guests(id)
 );
 
 -- rooms_bookings table

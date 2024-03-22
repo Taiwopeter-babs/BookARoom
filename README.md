@@ -2,4 +2,4 @@
 
 ## Entity Relationship Diagram
 
-![ERD Diagram](./config/BookARoom-1.png)
+![ERD Diagram](./config/BookARoom-2.png)
