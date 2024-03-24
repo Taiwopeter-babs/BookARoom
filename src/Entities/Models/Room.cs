@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -19,9 +20,9 @@ public class Room : BaseModel
     [MaxLength(128)]
     public string? Description { get; set; }
 
-    [Column("maxOccupancy")]
+    [Column("maximumOccupancy")]
     [Required]
-    public int MaxOccupancy { get; set; }
+    public int MaximumOccupancy { get; set; }
 
     [Column("numberAvailable")]
     [Required]
@@ -31,9 +32,9 @@ public class Room : BaseModel
     [Required]
     public decimal Price { get; set; }
 
-    [Column("state")]
-    [Required]
-    public string? State { get; set; }
+    [Column("isAvailable")]
+    [DefaultValue(true)]
+    public bool IsAvailable { get; set; } = true;
 
     // many-many rooms and amenities
     public List<Amenity>? Amenities { get; set; }

@@ -3,6 +3,7 @@ using System;
 using BookARoom.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BookARoom.Migrations
 {
     [DbContext(typeof(BookARoomContext))]
-    partial class BookARoomContextModelSnapshot : ModelSnapshot
+    [Migration("20240324165425_RenameRoomField")]
+    partial class RenameRoomField
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -58,15 +61,13 @@ namespace BookARoom.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("BookingDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("bookingDate");
-
-                    b.Property<DateTime>("CheckinDate")
+                    b.Property<DateTime?>("CheckinDate")
+                        .IsRequired()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("checkinDate");
 
-                    b.Property<DateTime>("CheckoutDate")
+                    b.Property<DateTime?>("CheckoutDate")
+                        .IsRequired()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("checkoutDate");
 
@@ -147,10 +148,6 @@ namespace BookARoom.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
                         .HasColumnName("description");
-
-                    b.Property<bool>("IsAvailable")
-                        .HasColumnType("boolean")
-                        .HasColumnName("isAvailable");
 
                     b.Property<int>("MaximumOccupancy")
                         .HasColumnType("integer")

@@ -1,4 +1,7 @@
 using BookARoom.Data;
+using BookARoom.Interfaces;
+using BookARoom.Repository;
+using BookARoom.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookARoom.Extensions;
@@ -30,5 +33,23 @@ public static class ServiceExtensions
                 .AllowAnyMethod()
                 .AllowAnyHeader());
         });
+    }
+
+    /// <summary>
+    /// Configure a scoped repository manager dependency injection
+    /// </summary>
+    /// <param name="services"></param>
+    public static void ConfigureRepositoryManager(this IServiceCollection services)
+    {
+        services.AddScoped<IRepositoryManager, RepositoryManager>();
+    }
+
+    /// <summary>
+    /// Configure a scoped service manager dependency injection
+    /// </summary>
+    /// <param name="services"></param>
+    public static void ConfigureServiceManager(this IServiceCollection services)
+    {
+        services.AddScoped<IServiceManager, ServiceManager>();
     }
 }
