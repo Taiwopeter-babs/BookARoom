@@ -11,11 +11,11 @@ public class Booking
 
     [Column("checkinDate")]
     [Required]
-    public DateTime? CheckinDate { get; set; }
+    public DateTime CheckinDate { get; set; }
 
     [Column("checkoutDate")]
     [Required]
-    public DateTime? CheckoutDate { get; set; }
+    public DateTime CheckoutDate { get; set; }
 
     // A reference to a guest's booking
     public Guest Guest { get; set; } = null!;

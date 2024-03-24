@@ -19,9 +19,9 @@ public class Room : BaseModel
     [MaxLength(128)]
     public string? Description { get; set; }
 
-    [Column("maxOccupancy")]
+    [Column("maximumOccupancy")]
     [Required]
-    public int MaxOccupancy { get; set; }
+    public int MaximumOccupancy { get; set; }
 
     [Column("numberAvailable")]
     [Required]
@@ -30,10 +30,6 @@ public class Room : BaseModel
     [Column("price")]
     [Required]
     public decimal Price { get; set; }
-
-    [Column("state")]
-    [Required]
-    public string? State { get; set; }
 
     // many-many rooms and amenities
     public List<Amenity>? Amenities { get; set; }

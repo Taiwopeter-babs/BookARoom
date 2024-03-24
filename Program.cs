@@ -10,6 +10,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.ConfigureDatabaseContext(builder.Configuration);
 builder.Services.ConfigureRepositoryManager();
+builder.Services.ConfigureServiceManager();
 builder.Services.AddAutoMapper(typeof(Program));
 
 var app = builder.Build();

@@ -19,12 +19,11 @@ public class RoomRepository : RepositoryBase<Room>, IRoomRepository
     {
         if (includeRelation)
             return await FindByCondition(room => room.Id == roomId, trackChanges)
-            .IncludeAmenityAndBookingsRelation()
+            .IncludeBookingsRelation(includeRelation)
             .SingleOrDefaultAsync();
 
         return await FindByCondition(room => room.Id == roomId, trackChanges)
             .SingleOrDefaultAsync();
-
     }
 
     public async Task<PagedList<Room>> GetRoomsAsync(RoomParameters roomParameters,

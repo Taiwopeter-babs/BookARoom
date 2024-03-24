@@ -5,12 +5,22 @@ namespace BookARoom.Extensions;
 
 public static class RoomRepositoryExtension
 {
-    public static IQueryable<Room> IncludeAmenityAndBookingsRelation(this IQueryable<Room> room)
+
+    /// <summary>
+    /// Extension method to include Bookings in the query. Amenities are included by default
+    /// </summary>
+    /// <param name="room"></param>
+    /// <returns></returns>
+    public static IQueryable<Room> IncludeBookingsRelation(this IQueryable<Room> room, bool includeBooking)
     {
-        return room
+        return includeBooking ?
+
+        room
         .Include(room => room.Amenities)
-        .Include(room => room.Bookings)
-        .AsSplitQuery();
+        .Include(room => room.Bookings) :
+
+        room
+            .Include(room => room.Amenities);
     }
 
     // public static IQueryable<Student> FilterStudentsByDepartment(this IQueryable<Student> students,
