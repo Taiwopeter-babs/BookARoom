@@ -9,6 +9,10 @@ public class Booking
     [Column("id")]
     public int Id { get; set; }
 
+    [Column("bookingDate")]
+    [Required]
+    public DateTime BookingDate { get; set; } = DateTime.UtcNow;
+
     [Column("checkinDate")]
     [Required]
     public DateTime CheckinDate { get; set; }

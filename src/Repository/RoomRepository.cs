@@ -15,14 +15,18 @@ public class RoomRepository : RepositoryBase<Room>, IRoomRepository
 
     public void AddRoom(Room room) => Create(room);
 
-    public async Task<Room?> GetRoomAsync(int roomId, bool includeRelation, bool trackChanges)
+    /// <summary>
+    /// Gets a Room.
+    /// </summary>
+    /// <param name="roomId"></param>
+    /// <param name="includeRelation">Set to false by default to exclude relationship entities</param>
+    /// <param name="includeBooking">Includes the Booking entities if set to true</param>
+    /// <param name="trackChanges"></param>
+    /// <returns></returns>
+    public async Task<Room?> GetRoomAsync(int roomId, bool includeAmenity = false, bool trackChanges = false)
     {
-        if (includeRelation)
-            return await FindByCondition(room => room.Id == roomId, trackChanges)
-            .IncludeBookingsRelation(includeRelation)
-            .SingleOrDefaultAsync();
-
         return await FindByCondition(room => room.Id == roomId, trackChanges)
+            .IncludeBookingsRelation(includeAmenity)
             .SingleOrDefaultAsync();
     }
 

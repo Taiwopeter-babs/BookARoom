@@ -8,8 +8,9 @@ public record class RoomDto
     public int MaximumOccupancy { get; init; }
     public decimal Price { get; init; }
     public int NumberAvailable { get; init; }
+    public bool IsAvailable { get; init; }
 
     public List<AmenityDto>? Amenities { get; init; }
-    public List<BookingDto>? Bookings { get; init; }
+    // public List<BookingDto>? Bookings { get; init; }
 }
 
