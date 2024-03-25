@@ -17,7 +17,9 @@ public static class ServiceExtensions
     public static void ConfigureDatabaseContext(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<BookARoomContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("PostgresqlDatabase")));
+            options.UseNpgsql(
+                configuration.GetConnectionString("PostgresqlDatabase"),
+                op => op.MigrationsHistoryTable("BookARoomMigrationsHistory")));
     }
 
     /// <summary>

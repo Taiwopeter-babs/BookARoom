@@ -33,6 +33,7 @@ public class Room : BaseModel
     public decimal Price { get; set; }
 
     [Column("isAvailable")]
+    [Required]
     [DefaultValue(true)]
     public bool IsAvailable { get; set; } = true;
 
