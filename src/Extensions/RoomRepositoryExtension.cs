@@ -21,13 +21,30 @@ public static class RoomRepositoryExtension
             .Include(room => room.Amenities);
     }
 
-    // public static IQueryable<Student> FilterStudentsByDepartment(this IQueryable<Student> students,
-    //     string department)
-    // {
-    //     if (department is null)
-    //         return students;
+    /// <summary>
+    /// Filter rooms by price
+    /// </summary>
+    /// <param name="rooms"></param>
+    /// <param name="minPrice"></param>
+    /// <param name="maxPrice"></param>
+    /// <returns></returns>
+    public static IQueryable<Room> FilterRoomsByPrice(this IQueryable<Room> rooms,
+        decimal minPrice, decimal maxPrice)
+    {
+        return rooms.Where(room => room.Price >= minPrice && room.Price <= maxPrice);
+    }
 
-    //     return students
-    //         .Where(st => st.Department.Equals(department, StringComparison.InvariantCultureIgnoreCase));
-    // }
+    /// <summary>
+    /// Filter rooms by the number available
+    /// </summary>
+    /// <param name="rooms"></param>
+    /// <param name="minNumber"></param>
+    /// <param name="maxNumber"></param>
+    /// <returns></returns>
+    public static IQueryable<Room> FilterRoomsByNumberAvailable(this IQueryable<Room> rooms,
+        int minNumber, int maxNumber)
+    {
+        return rooms
+            .Where(room => room.NumberAvailable >= minNumber && room.NumberAvailable <= maxNumber);
+    }
 }

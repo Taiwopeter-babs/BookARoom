@@ -19,8 +19,7 @@ public class RoomRepository : RepositoryBase<Room>, IRoomRepository
     /// Gets a Room.
     /// </summary>
     /// <param name="roomId"></param>
-    /// <param name="includeRelation">Set to false by default to exclude relationship entities</param>
-    /// <param name="includeBooking">Includes the Booking entities if set to true</param>
+    /// <param name="includeAmenity">Set to false by default to exclude relationship entities</param>
     /// <param name="trackChanges"></param>
     /// <returns></returns>
     public async Task<Room?> GetRoomAsync(int roomId, bool includeAmenity = false, bool trackChanges = false)
@@ -30,17 +29,19 @@ public class RoomRepository : RepositoryBase<Room>, IRoomRepository
             .SingleOrDefaultAsync();
     }
 
-    public async Task<PagedList<Room>> GetRoomsAsync(RoomParameters roomParameters,
+    public async Task<PagedList<Room>> GetRoomsAsync(RoomParameters roomParams,
         bool trackChanges)
     {
         var rooms = await FindAll(trackChanges)
+            .FilterRoomsByPrice(roomParams.MinPrice, roomParams.MaxPrice)
+            .FilterRoomsByNumberAvailable(roomParams.MinNumberAvailable, roomParams.MaxNumberAvailable)
             .OrderBy(room => room.Name)
             .ToListAsync();
 
         var roomsCount = await FindAll(trackChanges).CountAsync();
 
         return PagedList<Room>.ToPagedList(rooms, roomsCount,
-            roomParameters.PageNumber, roomParameters.PageSize);
+            roomParams.PageNumber, roomParams.PageSize);
     }
 
     public void RemoveRoom(Room room) => Delete(room);

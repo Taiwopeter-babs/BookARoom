@@ -36,15 +36,19 @@ internal sealed class RoomService : IRoomService
         return _mapper.Map<RoomDto>(room);
     }
 
-    public Task<(IEnumerable<RoomDto>, PageMetadata pageMetadata)> GetRoomsAsync(
+    public async Task<(IEnumerable<RoomDto>, PageMetadata pageMetadata)> GetRoomsAsync(
         RoomParameters roomParameters, bool trackChanges)
     {
-        throw new NotImplementedException();
+        var roomsWithPageData = await _repository.Room.GetRoomsAsync(roomParameters, trackChanges);
+
+        var roomsDto = _mapper.Map<IEnumerable<RoomDto>>(roomsWithPageData);
+
+        return (roomsDto, pageMetadata: roomsWithPageData.PageMetadata);
     }
 
     private async Task<Room> CheckIfRoomExists(int roomId, bool includeAmenity, bool trackChanges)
     {
-        var room = await _repository.Room.GetRoomAsync(roomId, includeAmenity) ??
+        var room = await _repository.Room.GetRoomAsync(roomId, includeAmenity, trackChanges) ??
             throw new RoomNotFoundException(roomId);
 
         return room;
