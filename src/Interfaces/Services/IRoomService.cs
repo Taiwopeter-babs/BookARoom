@@ -11,5 +11,8 @@ public interface IRoomService
         bool trackChanges = false);
 
     Task<(IEnumerable<RoomDto>, PageMetadata pageMetadata)> GetRoomsAsync(
-        RoomParameters roomParameters, bool trackChanges);
+        RoomParameters roomParameters, bool trackChanges = false);
+
+    Task UpdateRoomAsync(int roomId, RoomForUpdateDto roomForUpdateDto,
+        bool trackChanges = true);
 }

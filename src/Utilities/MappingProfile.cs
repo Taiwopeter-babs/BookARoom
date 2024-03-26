@@ -8,9 +8,10 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
+        // Amenity Mapping
         CreateMap<Amenity, AmenityDto>();
 
-
+        // Booking Mapping
         CreateMap<Booking, BookingDto>()
             .ForMember(destBooking => destBooking.CheckinDate, opt => opt.MapFrom(src => src.CheckinDate.Date))
             .ForMember(destBooking => destBooking.CheckinTime, opt => opt.MapFrom(
@@ -33,6 +34,9 @@ public class MappingProfile : Profile
                 srcGuest => string.Join(' ', srcGuest.State, srcGuest.City, srcGuest.Country)
             ));
 
+        CreateMap<BookingForCreationDto, Booking>();
+
+        // Room Mapping
         CreateMap<Room, RoomDto>();
         CreateMap<RoomForCreationDto, Room>();
 

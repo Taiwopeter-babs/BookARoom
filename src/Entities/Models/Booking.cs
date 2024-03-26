@@ -21,6 +21,9 @@ public class Booking
     [Required]
     public DateTime CheckoutDate { get; set; }
 
+    // foreign key to the guest
+    public int GuestId { get; set; }
+
     // A reference to a guest's booking
     public Guest Guest { get; set; } = null!;
 

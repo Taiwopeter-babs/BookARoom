@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BookARoom.Migrations
 {
     [DbContext(typeof(BookARoomContext))]
-    [Migration("20240324165425_RenameRoomField")]
-    partial class RenameRoomField
+    [Migration("20240325103740_AddInitialMigration")]
+    partial class AddInitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -61,13 +61,15 @@ namespace BookARoom.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("CheckinDate")
-                        .IsRequired()
+                    b.Property<DateTime>("BookingDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("bookingDate");
+
+                    b.Property<DateTime>("CheckinDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("checkinDate");
 
-                    b.Property<DateTime?>("CheckoutDate")
-                        .IsRequired()
+                    b.Property<DateTime>("CheckoutDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("checkoutDate");
 
@@ -148,6 +150,10 @@ namespace BookARoom.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
                         .HasColumnName("description");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("boolean")
+                        .HasColumnName("isAvailable");
 
                     b.Property<int>("MaximumOccupancy")
                         .HasColumnType("integer")

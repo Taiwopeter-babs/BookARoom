@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BookARoom.Dto;
+namespace BookARoom;
 
-public record RoomForCreationDto
+public record RoomForUpdateDto
 {
     [Required(ErrorMessage = "Room name is required")]
     [MaxLength(30, ErrorMessage = "Maximum length for name is 30 characters")]

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BookARoom.Migrations
 {
     [DbContext(typeof(BookARoomContext))]
-    [Migration("20240324165139_RemoveStateField")]
-    partial class RemoveStateField
+    [Migration("20240326110532_ChangeRelationshipGuestBooking")]
+    partial class ChangeRelationshipGuestBooking
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -61,13 +61,15 @@ namespace BookARoom.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("CheckinDate")
-                        .IsRequired()
+                    b.Property<DateTime>("BookingDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("bookingDate");
+
+                    b.Property<DateTime>("CheckinDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("checkinDate");
 
-                    b.Property<DateTime?>("CheckoutDate")
-                        .IsRequired()
+                    b.Property<DateTime>("CheckoutDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("checkoutDate");
 
@@ -76,7 +78,8 @@ namespace BookARoom.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GuestId");
+                    b.HasIndex("GuestId")
+                        .IsUnique();
 
                     b.ToTable("bookings");
                 });
@@ -149,9 +152,13 @@ namespace BookARoom.Migrations
                         .HasColumnType("character varying(128)")
                         .HasColumnName("description");
 
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("boolean")
+                        .HasColumnName("isAvailable");
+
                     b.Property<int>("MaximumOccupancy")
                         .HasColumnType("integer")
-                        .HasColumnName("maxOccupancy");
+                        .HasColumnName("maximumOccupancy");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -209,8 +216,8 @@ namespace BookARoom.Migrations
             modelBuilder.Entity("BookARoom.Models.Booking", b =>
                 {
                     b.HasOne("BookARoom.Models.Guest", "Guest")
-                        .WithMany("Bookings")
-                        .HasForeignKey("GuestId")
+                        .WithOne("Booking")
+                        .HasForeignKey("BookARoom.Models.Booking", "GuestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -249,7 +256,7 @@ namespace BookARoom.Migrations
 
             modelBuilder.Entity("BookARoom.Models.Guest", b =>
                 {
-                    b.Navigation("Bookings");
+                    b.Navigation("Booking");
                 });
 #pragma warning restore 612, 618
         }

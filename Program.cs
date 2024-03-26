@@ -1,4 +1,5 @@
 using BookARoom.Extensions;
+using BookARoom.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,9 @@ builder.Services.ConfigureDatabaseContext(builder.Configuration);
 builder.Services.ConfigureRepositoryManager();
 builder.Services.ConfigureServiceManager();
 builder.Services.AddAutoMapper(typeof(Program));
+
+// Add Dto Validation
+builder.Services.AddScoped<ValidateDtoFilter>();
 
 var app = builder.Build();
 

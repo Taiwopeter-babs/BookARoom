@@ -75,7 +75,8 @@ namespace BookARoom.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GuestId");
+                    b.HasIndex("GuestId")
+                        .IsUnique();
 
                     b.ToTable("bookings");
                 });
@@ -212,8 +213,8 @@ namespace BookARoom.Migrations
             modelBuilder.Entity("BookARoom.Models.Booking", b =>
                 {
                     b.HasOne("BookARoom.Models.Guest", "Guest")
-                        .WithMany("Bookings")
-                        .HasForeignKey("GuestId")
+                        .WithOne("Booking")
+                        .HasForeignKey("BookARoom.Models.Booking", "GuestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -252,7 +253,7 @@ namespace BookARoom.Migrations
 
             modelBuilder.Entity("BookARoom.Models.Guest", b =>
                 {
-                    b.Navigation("Bookings");
+                    b.Navigation("Booking");
                 });
 #pragma warning restore 612, 618
         }
