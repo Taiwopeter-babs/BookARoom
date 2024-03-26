@@ -39,6 +39,6 @@ public class Guest
     [MaxLength(60)]
     public string? State { get; set; }
 
-    // A guest can have many bookings
-    public List<Booking>? Bookings { get; set; }
+    // A one to one between a guest and a booking
+    public Booking? Booking { get; set; }
 }

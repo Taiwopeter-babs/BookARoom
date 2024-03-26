@@ -1,6 +1,5 @@
-﻿using BookARoom.Dto;
-
-namespace BookARoom;
+﻿
+namespace BookARoom.Dto;
 
 public record BookingDto
 {

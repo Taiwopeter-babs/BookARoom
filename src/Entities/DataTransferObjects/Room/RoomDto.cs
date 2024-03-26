@@ -1,6 +1,6 @@
 ﻿namespace BookARoom.Dto;
 
-public record class RoomDto
+public record RoomDto
 {
     public int Id { get; init; }
     public string? Name { get; init; }

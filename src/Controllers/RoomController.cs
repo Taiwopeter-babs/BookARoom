@@ -44,4 +44,13 @@ public sealed class RoomController : ControllerBase
 
         return CreatedAtRoute("GetRoom", new { addedRoom.Id }, addedRoom);
     }
+
+    [HttpPut("{id:int}")]
+    [ServiceFilter(typeof(ValidateDtoFilter))]
+    public async Task<IActionResult> UpdateRoom(int id, [FromBody] RoomForUpdateDto roomForUpdate)
+    {
+        await _service.RoomService.UpdateRoomAsync(id, roomForUpdate);
+
+        return NoContent();
+    }
 }
