@@ -18,7 +18,7 @@ internal sealed class RoomService : IRoomService
         _mapper = mapper;
     }
 
-    public async Task<RoomDto> AddRoomAsync(RoomForCreationDto roomDto)
+    public async Task<RoomDto> AddRoomAsync(RoomCreationDto roomDto)
     {
         var roomEntity = _mapper.Map<Room>(roomDto);
 
@@ -28,7 +28,7 @@ internal sealed class RoomService : IRoomService
         return _mapper.Map<RoomDto>(roomEntity);
     }
 
-    public async Task<RoomDto> GetRoomAsync(int roomId, bool includeAmenity = false,
+    public async Task<RoomDto> GetRoomAsync(int roomId, bool includeAmenity = true,
         bool trackChanges = false)
     {
         var room = await CheckIfRoomExists(roomId, includeAmenity, trackChanges);
@@ -49,7 +49,7 @@ internal sealed class RoomService : IRoomService
     public async Task UpdateRoomAsync(int roomId, RoomForUpdateDto roomForUpdateDto,
         bool trackChanges = true)
     {
-        var room = await CheckIfRoomExists(roomId, trackChanges: trackChanges);
+        var room = await CheckIfRoomExists(roomId, includeAmenity: false, trackChanges: trackChanges);
 
         _mapper.Map(roomForUpdateDto, room);
         await _repository.SaveAsync();
@@ -57,17 +57,16 @@ internal sealed class RoomService : IRoomService
 
     public async Task RemoveRoomAsync(int roomId, bool trackChanges = false)
     {
-        var room = await CheckIfRoomExists(roomId, includeAmenity: false, trackChanges: trackChanges);
+        var room = await CheckIfRoomExists(roomId, includeAmenity: false, trackChanges);
 
         _repository.Room.RemoveRoom(room);
 
         await _repository.SaveAsync();
     }
 
-    private async Task<Room> CheckIfRoomExists(int roomId, bool includeAmenity = false,
-        bool trackChanges = true)
+    private async Task<Room> CheckIfRoomExists(int roomId, bool includeAmenity,
+        bool trackChanges = false)
     {
-        // Console.WriteLine($"{includeAmenity} {trackChanges}");
         var room = await _repository.Room.GetRoomAsync(roomId, includeAmenity, trackChanges) ??
             throw new RoomNotFoundException(roomId);
 

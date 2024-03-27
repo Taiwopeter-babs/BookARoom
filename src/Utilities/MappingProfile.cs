@@ -10,6 +10,8 @@ public class MappingProfile : Profile
     {
         // Amenity Mapping
         CreateMap<Amenity, AmenityDto>();
+        CreateMap<AmenityCreationDto, Amenity>();
+        CreateMap<AmenityUpdateDto, Amenity>();
 
         // Booking Mapping
         CreateMap<Booking, BookingDto>()
@@ -34,11 +36,11 @@ public class MappingProfile : Profile
                 srcGuest => string.Join(' ', srcGuest.State, srcGuest.City, srcGuest.Country)
             ));
 
-        CreateMap<BookingForCreationDto, Booking>();
+        CreateMap<BookingCreationDto, Booking>();
 
         // Room Mapping
         CreateMap<Room, RoomDto>();
-        CreateMap<RoomForCreationDto, Room>();
+        CreateMap<RoomCreationDto, Room>();
         CreateMap<RoomForUpdateDto, Room>();
 
     }

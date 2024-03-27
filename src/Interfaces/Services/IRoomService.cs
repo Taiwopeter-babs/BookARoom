@@ -5,9 +5,9 @@ namespace BookARoom.Interfaces;
 
 public interface IRoomService
 {
-    Task<RoomDto> AddRoomAsync(RoomForCreationDto roomDto);
+    Task<RoomDto> AddRoomAsync(RoomCreationDto roomDto);
 
-    Task<RoomDto> GetRoomAsync(int roomId, bool includeAmenity = false,
+    Task<RoomDto> GetRoomAsync(int roomId, bool includeAmenity,
         bool trackChanges = false);
 
     Task<(IEnumerable<RoomDto>, PageMetadata pageMetadata)> GetRoomsAsync(

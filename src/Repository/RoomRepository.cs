@@ -22,7 +22,7 @@ public class RoomRepository : RepositoryBase<Room>, IRoomRepository
     /// <param name="includeAmenity">Set to false by default to exclude relationship entities</param>
     /// <param name="trackChanges"></param>
     /// <returns></returns>
-    public async Task<Room?> GetRoomAsync(int roomId, bool includeAmenity = false, bool trackChanges = false)
+    public async Task<Room?> GetRoomAsync(int roomId, bool includeAmenity, bool trackChanges = false)
     {
         // Console.WriteLine($"{includeAmenity} {trackChanges}");
         return await FindByCondition(room => room.Id == roomId, trackChanges)

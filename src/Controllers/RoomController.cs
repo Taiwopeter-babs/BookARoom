@@ -38,7 +38,7 @@ public sealed class RoomController : ControllerBase
 
     [HttpPost]
     [ServiceFilter(typeof(ValidateDtoFilter))]
-    public async Task<IActionResult> AddRoom([FromBody] RoomForCreationDto room)
+    public async Task<IActionResult> AddRoom([FromBody] RoomCreationDto room)
     {
         var addedRoom = await _service.RoomService.AddRoomAsync(room);
 
