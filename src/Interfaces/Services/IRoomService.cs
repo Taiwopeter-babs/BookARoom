@@ -15,4 +15,8 @@ public interface IRoomService
 
     Task UpdateRoomAsync(int roomId, RoomForUpdateDto roomForUpdateDto,
         bool trackChanges = true);
+
+    Task RemoveRoomAsync(int roomId, bool trackChanges = false);
+
+    // Task BookRoom(RoomBookingDto roomToBook);
 }

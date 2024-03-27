@@ -39,6 +39,7 @@ public class MappingProfile : Profile
         // Room Mapping
         CreateMap<Room, RoomDto>();
         CreateMap<RoomForCreationDto, Room>();
+        CreateMap<RoomForUpdateDto, Room>();
 
     }
 

@@ -12,13 +12,14 @@ public static class RoomRepositoryExtension
     /// </summary>
     /// <param name="room"></param>
     /// <returns></returns>
-    public static IQueryable<Room> IncludeBookingsRelation(this IQueryable<Room> room,
+    public static IQueryable<Room> IncludeRelation(this IQueryable<Room> room,
         bool includeAmenity)
     {
-        return !includeAmenity ?
-            room :
-            room
-            .Include(room => room.Amenities);
+        Console.WriteLine($"{includeAmenity}");
+        return includeAmenity ?
+            room.Include(room => room.Amenities) :
+            room;
+
     }
 
     /// <summary>

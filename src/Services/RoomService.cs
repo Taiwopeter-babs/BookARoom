@@ -49,15 +49,25 @@ internal sealed class RoomService : IRoomService
     public async Task UpdateRoomAsync(int roomId, RoomForUpdateDto roomForUpdateDto,
         bool trackChanges = true)
     {
-        var room = await CheckIfRoomExists(roomId, trackChanges);
+        var room = await CheckIfRoomExists(roomId, trackChanges: trackChanges);
 
         _mapper.Map(roomForUpdateDto, room);
+        await _repository.SaveAsync();
+    }
+
+    public async Task RemoveRoomAsync(int roomId, bool trackChanges = false)
+    {
+        var room = await CheckIfRoomExists(roomId, includeAmenity: false, trackChanges: trackChanges);
+
+        _repository.Room.RemoveRoom(room);
+
         await _repository.SaveAsync();
     }
 
     private async Task<Room> CheckIfRoomExists(int roomId, bool includeAmenity = false,
         bool trackChanges = true)
     {
+        // Console.WriteLine($"{includeAmenity} {trackChanges}");
         var room = await _repository.Room.GetRoomAsync(roomId, includeAmenity, trackChanges) ??
             throw new RoomNotFoundException(roomId);
 

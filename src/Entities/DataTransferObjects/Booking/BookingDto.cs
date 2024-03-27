@@ -11,6 +11,6 @@ public record BookingDto
     public int CheckoutTime { get; init; }
     public GuestDto? Guest { get; init; }
 
-    public List<RoomDto>? Rooms { get; init; }
+    public List<RoomBookingDto>? RoomsBooked { get; init; }
 
 }

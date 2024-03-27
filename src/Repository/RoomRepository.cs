@@ -24,8 +24,9 @@ public class RoomRepository : RepositoryBase<Room>, IRoomRepository
     /// <returns></returns>
     public async Task<Room?> GetRoomAsync(int roomId, bool includeAmenity = false, bool trackChanges = false)
     {
+        // Console.WriteLine($"{includeAmenity} {trackChanges}");
         return await FindByCondition(room => room.Id == roomId, trackChanges)
-            .IncludeBookingsRelation(includeAmenity)
+            .IncludeRelation(includeAmenity)
             .SingleOrDefaultAsync();
     }
 
@@ -46,8 +47,4 @@ public class RoomRepository : RepositoryBase<Room>, IRoomRepository
 
     public void RemoveRoom(Room room) => Delete(room);
 
-    public async Task UpdateRoom(Room room)
-    {
-        throw new NotImplementedException();
-    }
 }

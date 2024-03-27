@@ -53,4 +53,12 @@ public sealed class RoomController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> RemoveRoom(int id)
+    {
+        await _service.RoomService.RemoveRoomAsync(id);
+
+        return NoContent();
+    }
 }
