@@ -16,7 +16,7 @@ public static class RoomRepositoryExtension
         bool includeAmenity)
     {
         return includeAmenity ?
-            room.Include(room => room.Amenities) :
+            room.Include(room => room.Amenities).AsSplitQuery() :
             room;
 
     }

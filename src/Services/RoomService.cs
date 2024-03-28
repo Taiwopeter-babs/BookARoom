@@ -79,7 +79,7 @@ internal sealed class RoomService : IRoomService
     }
 
     /// <summary>
-    /// Add or update room's amenities
+    /// Add or update room's amenities. Amenities which are present are excluded
     /// </summary>
     /// <param name="amenitiesIds"></param>
     /// <param name="room"></param>
@@ -92,24 +92,34 @@ internal sealed class RoomService : IRoomService
             return;
         }
 
-        // get amenities with the ids in the list
-        List<Amenity> amenitiesToAdd = await _repository.Amenity.FindAmenitiesByCondition(amenitiesIds);
+        // remove repititions
+        var distinctIds = amenitiesIds.Distinct().ToList();
 
-        if (amenitiesToAdd == null || amenitiesToAdd.Count == 0)
+        // find amenities by ids in the list
+        List<Amenity> amenitiesInStore = await _repository.Amenity.FindAmenitiesByCondition(distinctIds);
+        if (amenitiesInStore == null || amenitiesInStore.Count == 0)
         {
             return;
         }
-        foreach (var amenity in amenitiesToAdd)
-        {
-            Console.WriteLine($"{amenity.Name} {amenity.Id} {amenity.UpdatedAt}");
-        }
 
-        // clear the room amenities and add current list
-        // if (room.Amenities.Count != 0)
-        //     _repository.Room.RemoveAmenities(room.Amenities);
+        // extract ids of amenities found
+        var idsFound = amenitiesInStore.Select(amenity => amenity.Id).ToList();
 
-        // // amenitiesToAdd.ForEach(room.Amenities.Add);
+        // get ids of amenities already present in room
+        var amenitiesAlreadyPresentInRoom = room.RoomsAmenities
+            .Select(room => room.AmenityId)
+            .ToList();
 
         // await _repository.Room.AddAmenities(amenitiesToAdd);
+        // get ids of amenities not present in room and transform to a new RoomAmenity
+        var amenitiesToAddToRoom = idsFound
+            .Where(id => !amenitiesAlreadyPresentInRoom.Contains(id)).ToList()
+            .Select(id => new RoomsAmenities()
+            {
+                AmenityId = id,
+                Room = room
+            }).ToList();
+
+        room.RoomsAmenities.AddRange(amenitiesToAddToRoom);
     }
 }
