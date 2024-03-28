@@ -46,7 +46,7 @@ public class AmenityRepository : RepositoryBase<Amenity>, IAmenityRepository
     public async Task<Amenity?> GetAmenityByName(string name, bool trackChanges = false)
     {
         return await FindByCondition(am =>
-            am.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase), trackChanges)
+            am.Name.Equals(name), trackChanges)
             .SingleOrDefaultAsync();
     }
 }

@@ -30,5 +30,11 @@ public class BookARoomContext : DbContext
         .HasMany(room => room.Bookings)
         .WithMany(b => b.Rooms)
         .UsingEntity("rooms_bookings");
+
+        // create a collation for case-insensitive matching for the amenities table
+        modelBuilder.HasCollation("my_collation", locale: "en-u-ks-primary", provider: "icu", deterministic: false);
+
+        modelBuilder.Entity<Amenity>().Property(am => am.Name)
+            .UseCollation("my_collation");
     }
 }

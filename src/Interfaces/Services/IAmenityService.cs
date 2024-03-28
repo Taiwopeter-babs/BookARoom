@@ -7,8 +7,7 @@ public interface IAmenityService
 {
     Task<AmenityDto> AddAmenityAsync(AmenityCreationDto amenityCreationDto);
 
-    Task<AmenityDto> GetAmenityAsync(int amenityId, bool includeRoom,
-        bool trackChanges = false);
+    Task<AmenityDto> GetAmenityAsync(int amenityId, bool trackChanges = false);
 
     Task<(IEnumerable<AmenityDto>, PageMetadata pageMetadata)> GetAmenitiesAsync(
         AmenityParameters amenityParameters, bool trackChanges = false);

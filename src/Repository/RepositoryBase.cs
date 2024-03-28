@@ -7,29 +7,29 @@ namespace BookARoom.Repository;
 
 public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
 {
-    protected BookARoomContext BookARoomContext;
+    protected BookARoomContext _bookARoomContext;
 
     public RepositoryBase(BookARoomContext bookARoomContext) =>
-        BookARoomContext = bookARoomContext;
+        _bookARoomContext = bookARoomContext;
 
     /// <summary>
     /// Add an entity to the database
     /// </summary>
     /// <param name="entity"></param>
-    public void Create(T entity) => BookARoomContext.Set<T>().Add(entity);
+    public void Create(T entity) => _bookARoomContext.Set<T>().Add(entity);
 
     /// <summary>
     /// Remove an entity from the database
     /// </summary>
     /// <param name="entity"></param>
-    public void Delete(T entity) => BookARoomContext.Set<T>().Remove(entity);
+    public void Delete(T entity) => _bookARoomContext.Set<T>().Remove(entity);
 
     public IQueryable<T> FindAll(bool trackChanges)
     {
         if (!trackChanges)
-            return BookARoomContext.Set<T>().AsNoTracking();
+            return _bookARoomContext.Set<T>().AsNoTracking();
 
-        return BookARoomContext.Set<T>();
+        return _bookARoomContext.Set<T>();
     }
 
     /// <summary>
@@ -43,12 +43,12 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
         bool trackChanges)
     {
         if (!trackChanges)
-            return BookARoomContext.Set<T>()
+            return _bookARoomContext.Set<T>()
             .Where(expression)
             .AsNoTracking();
 
-        return BookARoomContext.Set<T>().Where(expression);
+        return _bookARoomContext.Set<T>().Where(expression);
     }
 
-    public void Update(T entity) => BookARoomContext.Set<T>().Update(entity);
+    public void Update(T entity) => _bookARoomContext.Set<T>().Update(entity);
 }

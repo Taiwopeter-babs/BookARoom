@@ -33,25 +33,47 @@ public class AmenityService : IAmenityService
         return _mapper.Map<AmenityDto>(amenityEntity);
     }
 
-    public Task<AmenityDto> GetAmenityAsync(int amenityId, bool includeRoom,
-        bool trackChanges = false)
+    public async Task<AmenityDto> GetAmenityAsync(int amenityId, bool trackChanges = false)
     {
-        throw new NotImplementedException();
+        var amenity = await CheckAmenity(amenityId, trackChanges);
+
+        return _mapper.Map<AmenityDto>(amenity);
     }
 
-    public Task<(IEnumerable<AmenityDto>, PageMetadata pageMetadata)> GetAmenitiesAsync(
-        AmenityParameters amenityParameters, bool trackChanges = false)
+    public async Task<(IEnumerable<AmenityDto>, PageMetadata pageMetadata)> GetAmenitiesAsync(
+        AmenityParameters amenityParams, bool trackChanges = false)
     {
-        throw new NotImplementedException();
+        var amenitiesWithPageData = await _repository.Amenity.GetAmenitiesAsync(amenityParams, trackChanges);
+
+        var amenitiesDtos = _mapper.Map<IEnumerable<AmenityDto>>(amenitiesWithPageData);
+
+        return (amenitiesDtos, pageMetadata: amenitiesWithPageData.PageMetadata);
     }
 
-    public Task RemoveAmenityAsync(int amenityId, bool trackChanges = false)
+    public async Task RemoveAmenityAsync(int amenityId, bool trackChanges = false)
     {
-        throw new NotImplementedException();
+        var amenity = await CheckAmenity(amenityId, trackChanges);
+
+        _repository.Amenity.RemoveAmenity(amenity);
+
+        await _repository.SaveAsync();
     }
 
-    public Task UpdateAmenityAsync(int amenityId, AmenityUpdateDto amenityUpdateDto, bool trackChanges = true)
+    public async Task UpdateAmenityAsync(int amenityId, AmenityUpdateDto amenityUpdateDto,
+        bool trackChanges = true)
     {
-        throw new NotImplementedException();
+        var amenity = await CheckAmenity(amenityId, trackChanges);
+
+        _mapper.Map(amenityUpdateDto, amenity);
+
+        await _repository.SaveAsync();
+    }
+
+    private async Task<Amenity> CheckAmenity(int amenityId, bool trackChanges)
+    {
+        var amenity = await _repository.Amenity.GetAmenityAsync(amenityId, trackChanges) ??
+            throw new AmenityNotFoundException(amenityId);
+
+        return amenity;
     }
 }

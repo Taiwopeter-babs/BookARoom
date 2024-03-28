@@ -1,4 +1,4 @@
-﻿namespace BookARoom;
+﻿namespace BookARoom.Exceptions;
 
 public abstract class BadRequestException : Exception
 {
