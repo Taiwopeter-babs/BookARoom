@@ -52,6 +52,9 @@ internal sealed class RoomService : IRoomService
         var room = await CheckIfRoomExists(roomId, includeAmenity: false, trackChanges: trackChanges);
 
         _mapper.Map(roomForUpdateDto, room);
+
+        _repository.Room.UpdateRoomTime(room);
+
         await _repository.SaveAsync();
     }
 

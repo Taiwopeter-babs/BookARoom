@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using BookARoom.Data;
 using BookARoom.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace BookARoom.Repository;
 
@@ -50,5 +51,26 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
         return _bookARoomContext.Set<T>().Where(expression);
     }
 
-    public void Update(T entity) => _bookARoomContext.Set<T>().Update(entity);
+    public void Update(T entity)
+    {
+        _bookARoomContext.Set<T>().Update(entity);
+        // UpdateTime(entity);
+    }
+
+
+    /// <summary>
+    /// Update the updatedAt field of the modified entity
+    /// </summary>
+    /// <param name="entity"></param>
+    public void UpdateTime(T entity)
+    {
+        var entityEntry = _bookARoomContext.Set<T>().Entry(entity);
+
+        if (entityEntry.State == EntityState.Modified)
+        {
+            // update the updatedAt time
+            _bookARoomContext.Set<T>().Entry(entity)
+                .Property<DateTime?>("UpdatedAt").CurrentValue = DateTime.UtcNow;
+        }
+    }
 }

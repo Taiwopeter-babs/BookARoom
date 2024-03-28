@@ -15,7 +15,6 @@ public static class RoomRepositoryExtension
     public static IQueryable<Room> IncludeRelation(this IQueryable<Room> room,
         bool includeAmenity)
     {
-        Console.WriteLine($"{includeAmenity}");
         return includeAmenity ?
             room.Include(room => room.Amenities) :
             room;

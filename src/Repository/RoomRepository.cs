@@ -47,4 +47,10 @@ public class RoomRepository : RepositoryBase<Room>, IRoomRepository
 
     public void RemoveRoom(Room room) => Delete(room);
 
+    /// <summary>
+    /// Update the updatedAt field of the modified room
+    /// </summary>
+    /// <param name="entity"></param>
+    public void UpdateRoomTime(Room room) => UpdateTime(room);
+
 }
