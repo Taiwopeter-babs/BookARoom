@@ -66,6 +66,8 @@ public class AmenityService : IAmenityService
 
         _mapper.Map(amenityUpdateDto, amenity);
 
+        _repository.Amenity.UpdateModifiedTime(amenity);
+
         await _repository.SaveAsync();
     }
 

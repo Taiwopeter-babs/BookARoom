@@ -47,7 +47,7 @@ public sealed class RoomController : ControllerBase
 
     [HttpPut("{id:int}")]
     [ServiceFilter(typeof(ValidateDtoFilter))]
-    public async Task<IActionResult> UpdateRoom(int id, [FromBody] RoomForUpdateDto roomForUpdate)
+    public async Task<IActionResult> UpdateRoom(int id, [FromBody] RoomUpdateDto roomForUpdate)
     {
         await _service.RoomService.UpdateRoomAsync(id, roomForUpdate);
 

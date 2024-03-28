@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using BookARoom.Data;
 using BookARoom.Interfaces;
+using BookARoom.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
@@ -12,6 +13,8 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
 
     public RepositoryBase(BookARoomContext bookARoomContext) =>
         _bookARoomContext = bookARoomContext;
+
+    public async Task AddItems(List<T> items) => await _bookARoomContext.AddRangeAsync(items);
 
     /// <summary>
     /// Add an entity to the database

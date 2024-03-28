@@ -1,6 +1,6 @@
 ﻿
 namespace BookARoom.Dto;
 
-public record RoomForUpdateDto : RoomCommonDto
+public record RoomUpdateDto : RoomCommonDto
 {
 }

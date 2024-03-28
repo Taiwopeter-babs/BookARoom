@@ -41,7 +41,8 @@ public class MappingProfile : Profile
         // Room Mapping
         CreateMap<Room, RoomDto>();
         CreateMap<RoomCreationDto, Room>();
-        CreateMap<RoomForUpdateDto, Room>();
+        CreateMap<RoomUpdateDto, Room>()
+            .ForMember(destRoom => destRoom.Amenities, opt => opt.Ignore());
 
     }
 

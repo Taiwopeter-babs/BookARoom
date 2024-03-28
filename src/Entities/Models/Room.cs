@@ -38,8 +38,10 @@ public class Room : BaseModel
     public bool IsAvailable { get; set; } = true;
 
     // many-many rooms and amenities
-    public List<Amenity>? Amenities { get; set; }
+    public List<Amenity> Amenities { get; set; } = [];
+    public List<RoomsAmenities> RoomsAmenities { get; set; } = [];
 
     // many-many rooms and bookings
-    public List<Booking>? Bookings { get; set; }
+    public List<Booking> Bookings { get; set; } = [];
+    public List<RoomsBookings> RoomsBookings { get; set; } = [];
 }

@@ -47,10 +47,16 @@ public class RoomRepository : RepositoryBase<Room>, IRoomRepository
 
     public void RemoveRoom(Room room) => Delete(room);
 
+    public void RemoveAmenities(List<Amenity> amenities) =>
+        _bookARoomContext.RemoveRange(amenities);
+
+    public async Task AddAmenities(List<Amenity> amenities) =>
+        await _bookARoomContext.AddRangeAsync(amenities);
+
     /// <summary>
     /// Update the updatedAt field of the modified room
     /// </summary>
     /// <param name="entity"></param>
-    public void UpdateRoomTime(Room room) => UpdateTime(room);
+    public void UpdateModifiedTime(Room room) => UpdateTime(room);
 
 }

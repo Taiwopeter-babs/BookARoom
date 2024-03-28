@@ -12,4 +12,8 @@ public interface IAmenityRepository
     void RemoveAmenity(Amenity amenity);
 
     Task<Amenity?> GetAmenityByName(string name, bool trackChanges = false);
+
+    Task<List<Amenity>> FindAmenitiesByCondition(List<int> AmenitiesIdsToFind);
+
+    void UpdateModifiedTime(Amenity amenity);
 }

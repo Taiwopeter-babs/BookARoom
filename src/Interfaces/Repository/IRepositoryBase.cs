@@ -9,6 +9,8 @@ public interface IRepositoryBase<T>
     void Create(T entity);
     void Delete(T entity);
     void Update(T entity);
-
     void UpdateTime(T entity);
+
+    // void RemoveItems(List<T> items);
+    // Task AddItems(List<T> items);
 }

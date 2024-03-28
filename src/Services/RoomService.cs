@@ -46,14 +46,16 @@ internal sealed class RoomService : IRoomService
         return (roomsDto, pageMetadata: roomsWithPageData.PageMetadata);
     }
 
-    public async Task UpdateRoomAsync(int roomId, RoomForUpdateDto roomForUpdateDto,
+    public async Task UpdateRoomAsync(int roomId, RoomUpdateDto roomUpdateDto,
         bool trackChanges = true)
     {
-        var room = await CheckIfRoomExists(roomId, includeAmenity: false, trackChanges: trackChanges);
+        var room = await CheckIfRoomExists(roomId, includeAmenity: true, trackChanges: trackChanges);
 
-        _mapper.Map(roomForUpdateDto, room);
+        await UpdateRoomAmenities(roomUpdateDto.Amenities, room);
 
-        _repository.Room.UpdateRoomTime(room);
+        _mapper.Map(roomUpdateDto, room);
+
+        _repository.Room.UpdateModifiedTime(room);
 
         await _repository.SaveAsync();
     }
@@ -74,5 +76,40 @@ internal sealed class RoomService : IRoomService
             throw new RoomNotFoundException(roomId);
 
         return room;
+    }
+
+    /// <summary>
+    /// Add or update room's amenities
+    /// </summary>
+    /// <param name="amenitiesIds"></param>
+    /// <param name="room"></param>
+    /// <returns></returns>
+    private async Task UpdateRoomAmenities(List<int>? amenitiesIds, Room room)
+    {
+        // check if amenities list is not empty or null
+        if (amenitiesIds == null || amenitiesIds.Count == 0 || room.Amenities == null)
+        {
+            return;
+        }
+
+        // get amenities with the ids in the list
+        List<Amenity> amenitiesToAdd = await _repository.Amenity.FindAmenitiesByCondition(amenitiesIds);
+
+        if (amenitiesToAdd == null || amenitiesToAdd.Count == 0)
+        {
+            return;
+        }
+        foreach (var amenity in amenitiesToAdd)
+        {
+            Console.WriteLine($"{amenity.Name} {amenity.Id} {amenity.UpdatedAt}");
+        }
+
+        // clear the room amenities and add current list
+        // if (room.Amenities.Count != 0)
+        //     _repository.Room.RemoveAmenities(room.Amenities);
+
+        // // amenitiesToAdd.ForEach(room.Amenities.Add);
+
+        // await _repository.Room.AddAmenities(amenitiesToAdd);
     }
 }

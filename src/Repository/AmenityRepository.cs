@@ -49,4 +49,23 @@ public class AmenityRepository : RepositoryBase<Amenity>, IAmenityRepository
             am.Name.Equals(name), trackChanges)
             .SingleOrDefaultAsync();
     }
+
+    /// <summary>
+    /// Find Amenity entities whose ids' are present in the list
+    /// </summary>
+    /// <param name="AmenitiesIdsToFind">Ids of amenities to find</param>
+    /// <returns></returns>
+    public async Task<List<Amenity>> FindAmenitiesByCondition(List<int> AmenitiesIdsToFind)
+    {
+        var amenitiesFound = await FindByCondition(am =>
+            AmenitiesIdsToFind.Contains(am.Id), trackChanges: false).ToListAsync();
+
+        return amenitiesFound;
+    }
+
+    /// <summary>
+    /// Update the updatedAt field of the modified entity
+    /// </summary>
+    /// <param name="entity"></param>
+    public void UpdateModifiedTime(Amenity amenity) => UpdateTime(amenity);
 }

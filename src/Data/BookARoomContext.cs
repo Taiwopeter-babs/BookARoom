@@ -10,6 +10,8 @@ public class BookARoomContext : DbContext
     public DbSet<Booking> Bookings { get; set; }
     public DbSet<Amenity> Amenities { get; set; }
     public DbSet<Guest> Guests { get; set; }
+    public DbSet<RoomsAmenities> RoomsAmenities { get; set; }
+    public DbSet<RoomsBookings> RoomsBookings { get; set; }
 
     public BookARoomContext(DbContextOptions<BookARoomContext> options) : base(options)
     {
@@ -17,19 +19,17 @@ public class BookARoomContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // base.OnModelCreating(modelBuilder);
-
         // Room - Amenities join configuration
         modelBuilder.Entity<Room>()
         .HasMany(room => room.Amenities)
-        .WithMany(am => am.Rooms)
-        .UsingEntity("rooms_amenities");
+        .WithMany(amenity => amenity.Rooms)
+        .UsingEntity<RoomsAmenities>();
 
-        // Room - Amenities join configuration
+        // Room - bookings join configuration
         modelBuilder.Entity<Room>()
         .HasMany(room => room.Bookings)
-        .WithMany(b => b.Rooms)
-        .UsingEntity("rooms_bookings");
+        .WithMany(booking => booking.Rooms)
+        .UsingEntity<RoomsBookings>();
 
         // create a collation for case-insensitive matching for the amenities table
         modelBuilder.HasCollation("my_collation", locale: "en-u-ks-primary", provider: "icu", deterministic: false);
