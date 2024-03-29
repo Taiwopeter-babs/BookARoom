@@ -10,8 +10,4 @@ public interface IRoomRepository
     Task<PagedList<Room>> GetRoomsAsync(RoomParameters roomParameters, bool trackChanges = false);
     void RemoveRoom(Room room);
     void UpdateModifiedTime(Room room);
-
-    void RemoveAmenities(List<Amenity> amenities);
-
-    Task AddAmenities(List<Amenity> amenities);
 }

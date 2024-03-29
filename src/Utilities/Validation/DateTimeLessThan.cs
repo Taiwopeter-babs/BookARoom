@@ -2,6 +2,11 @@
 
 namespace BookARoom.Utilities;
 
+
+/// <summary>
+/// A custom validation attribute to check that the decorated datetime
+/// is less than or equal to the property value passed
+/// </summary>
 public class DateTimeLessThan : ValidationAttribute
 {
     private enum DateTimeComparisonResult

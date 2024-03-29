@@ -30,3 +30,11 @@ public record RoomCommonDto
     /// </summary>
     public List<int>? Amenities { get; set; }
 }
+
+public record RoomCreationDto : RoomCommonDto
+{
+}
+
+public record RoomUpdateDto : RoomCommonDto
+{
+}

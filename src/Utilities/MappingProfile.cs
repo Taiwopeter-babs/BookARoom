@@ -28,6 +28,9 @@ public class MappingProfile : Profile
                     src.CheckoutDate.Minute.ToString()
                     )));
 
+        CreateMap<BookingCreationDto, Booking>();
+
+        // Guest mapping
         CreateMap<Guest, GuestDto>()
             .ForMember(destGuest => destGuest.FullName, opt => opt.MapFrom(
                 srcGuest => string.Join(' ', srcGuest.FirstName, srcGuest.LastName)
@@ -35,8 +38,9 @@ public class MappingProfile : Profile
             .ForMember(destGuest => destGuest.Location, opt => opt.MapFrom(
                 srcGuest => string.Join(' ', srcGuest.State, srcGuest.City, srcGuest.Country)
             ));
+        CreateMap<GuestCreationDto, Guest>();
+        CreateMap<GuestUpdateDto, Guest>();
 
-        CreateMap<BookingCreationDto, Booking>();
 
         // Room Mapping
         CreateMap<Room, RoomDto>();

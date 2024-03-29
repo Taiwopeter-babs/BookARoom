@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BookARoom;
+namespace BookARoom.Dto;
 
-public class GuestCreationDto
+public record GuestCommonDto
 {
     [Required(ErrorMessage = "First name is required")]
     [MaxLength(128, ErrorMessage = "Maximum length for first name is 128 characters")]
@@ -26,4 +26,13 @@ public class GuestCreationDto
     [Required(ErrorMessage = "State is required")]
     [MaxLength(60, ErrorMessage = "Maximum length for state is 60 characters")]
     public string? State { get; set; }
+}
+
+public record GuestCreationDto : GuestCommonDto { }
+
+public record GuestUpdateDto : GuestCommonDto
+{
+    // public DateTime? LastBookingDate { get; set; }
+
+    // public int NumberOfBookings { get; set; }
 }

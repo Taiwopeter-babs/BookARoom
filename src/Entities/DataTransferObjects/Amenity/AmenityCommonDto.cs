@@ -8,3 +8,12 @@ public record AmenityCommonDto
     [MaxLength(100, ErrorMessage = "Maximum length for name is 100 characters")]
     public string? Name { get; set; }
 }
+
+public record AmenityCreationDto : AmenityCommonDto
+{
+}
+
+public record AmenityUpdateDto : AmenityCommonDto
+{
+
+}

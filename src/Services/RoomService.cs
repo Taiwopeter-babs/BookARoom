@@ -22,6 +22,9 @@ internal sealed class RoomService : IRoomService
     {
         var roomEntity = _mapper.Map<Room>(roomDto);
 
+        // add amenities if present
+        await UpdateRoomAmenities(roomDto.Amenities, roomEntity);
+
         _repository.Room.AddRoom(roomEntity);
         await _repository.SaveAsync();
 
@@ -51,6 +54,7 @@ internal sealed class RoomService : IRoomService
     {
         var room = await CheckIfRoomExists(roomId, includeAmenity: true, trackChanges: trackChanges);
 
+        // update room amenities if present
         await UpdateRoomAmenities(roomUpdateDto.Amenities, room);
 
         _mapper.Map(roomUpdateDto, room);
@@ -79,15 +83,15 @@ internal sealed class RoomService : IRoomService
     }
 
     /// <summary>
-    /// Add or update room's amenities. Amenities which are present are excluded
+    /// Add or update room's amenities. Amenities which are already present are excluded
     /// </summary>
-    /// <param name="amenitiesIds"></param>
-    /// <param name="room"></param>
+    /// <param name="amenitiesIds">List of integer ids of amenities to add</param>
+    /// <param name="room">The room to which amenities will be added</param>
     /// <returns></returns>
     private async Task UpdateRoomAmenities(List<int>? amenitiesIds, Room room)
     {
         // check if amenities list is not empty or null
-        if (amenitiesIds == null || amenitiesIds.Count == 0 || room.Amenities == null)
+        if (amenitiesIds == null || amenitiesIds.Count == 0)
         {
             return;
         }
@@ -110,10 +114,9 @@ internal sealed class RoomService : IRoomService
             .Select(room => room.AmenityId)
             .ToList();
 
-        // await _repository.Room.AddAmenities(amenitiesToAdd);
-        // get ids of amenities not present in room and transform to a new RoomAmenity
+        // get ids of amenities not present in room and transform to RoomAmenities
         var amenitiesToAddToRoom = idsFound
-            .Where(id => !amenitiesAlreadyPresentInRoom.Contains(id)).ToList()
+            .Where(id => !amenitiesAlreadyPresentInRoom.Contains(id))
             .Select(id => new RoomsAmenities()
             {
                 AmenityId = id,
