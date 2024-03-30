@@ -7,16 +7,15 @@ public interface IGuestService
 {
     Task<GuestDto> AddGuestAsync(GuestCreationDto guestDto);
 
-    Task<GuestDto> GetGuestAsync(int GuestId, bool includeBookings,
-        bool trackChanges = false);
+    Task<GuestDto> GetGuestAsync(int GuestId, bool trackChanges);
 
     Task<(IEnumerable<GuestDto>, PageMetadata pageMetadata)> GetGuestsAsync(
-        GuestParameters guestParameters, bool trackChanges = false);
+        GuestParameters guestParams, bool trackChanges = false);
 
-    Task UpdateGuestAsync(int GuestId, GuestUpdateDto GuestForUpdateDto,
+    Task UpdateGuestAsync(int guestId, GuestUpdateDto guestForUpdateDto,
         bool trackChanges = true);
 
-    Task RemoveGuestAsync(int GuestId, bool trackChanges = false);
+    Task RemoveGuestAsync(int guestId, bool trackChanges = false);
 
     // Task BookGuest(GuestBookingDto GuestToBook);
 }

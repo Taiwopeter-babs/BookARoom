@@ -44,12 +44,14 @@ public static class GuestRepositoryExtension
         DateTime minDate, DateTime maxDate)
     {
         return guests.Where(guest =>
-            (guest.CreatedAt.CompareTo(minDate) >= 0) && (guest.CreatedAt.CompareTo(maxDate) <= 0));
+            (guest.CreatedAt >= minDate) && (guest.CreatedAt <= maxDate));
     }
 
     public static IQueryable<Guest> FilterByLastBookingDate(this IQueryable<Guest> guests,
         DateTime lastBookingDate)
     {
-        return guests.Where(guest => guest.CreatedAt.CompareTo(lastBookingDate) == 0);
+        // Guests who have not made any bookings will have lastBookingDate field as null
+        return guests
+            .Where(guest => guest.LastBookingDate >= lastBookingDate);
     }
 }

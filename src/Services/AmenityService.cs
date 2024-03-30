@@ -21,9 +21,9 @@ public class AmenityService : IAmenityService
 
     public async Task<AmenityDto> AddAmenityAsync(AmenityCreationDto amenityCreationDto)
     {
-        var amenity = await _repository.Amenity.GetAmenityByName(amenityCreationDto.Name);
+        var amenity = await _repository.Amenity.GetAmenityByName(amenityCreationDto.Name!);
         if (amenity != null)
-            throw new AmenityAlreadyExistsException(amenityCreationDto.Name);
+            throw new AmenityAlreadyExistsException(amenityCreationDto.Name!);
 
         var amenityEntity = _mapper.Map<Amenity>(amenityCreationDto);
         _repository.Amenity.AddAmenity(amenityEntity);

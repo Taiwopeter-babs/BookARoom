@@ -7,7 +7,7 @@ public class DateTimeValidation : ValidationAttribute
     public override bool IsValid(object? value)
     {
         if (value is null)
-            return false;
+            return true;
 
         bool isParsed = DateTime.TryParse((string)value, out DateTime dateTime);
 

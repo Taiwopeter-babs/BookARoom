@@ -27,7 +27,7 @@ public class GuestRepository : RepositoryBase<Guest>, IGuestRepository
     public async Task<Guest?> GetGuestAsync(int guestId, bool includeBookings = false,
         bool trackChanges = false)
     {
-        return await FindByCondition(guest => guest.Id == guestId, trackChanges)
+        return await FindByCondition(guest => guest.Id.Equals(guestId), trackChanges)
             .IncludeBookings(includeBookings)
             .SingleOrDefaultAsync();
     }
@@ -49,12 +49,16 @@ public class GuestRepository : RepositoryBase<Guest>, IGuestRepository
     public async Task<PagedList<Guest>> GetGuestsAsync(GuestParameters guestParams,
         bool trackChanges = false)
     {
+        var minDate = guestParams.MinCreationDate.GetUtcDate();
+        var maxDate = guestParams.MaxCreationDate.GetUtcDate();
+        var lastBookingDate = guestParams.LastBookingDate.GetUtcDate();
+
         var guests = await FindAll(trackChanges)
             .FilterByCountry(guestParams.Country)
             .FilterByState(guestParams.State)
             .FilterByNumberOfBookings(guestParams.MinBookings, guestParams.MaxBookings)
-            .FilterByGuestsCreationDate(guestParams.MinCreationDate, guestParams.MaxCreationDate)
-            .FilterByLastBookingDate(guestParams.LastBookingDate)
+            .FilterByGuestsCreationDate(minDate, maxDate)
+            .FilterByLastBookingDate(lastBookingDate)
             .ToListAsync();
 
         var guestsCount = await FindAll(trackChanges).CountAsync();

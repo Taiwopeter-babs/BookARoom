@@ -26,7 +26,9 @@ public class GuestService : IGuestService
             .GetGuestByEmailAsync(guestDto.Email!, trackChanges: false);
 
         if (guest != null)
+        {
             return _mapper.Map<GuestDto>(guest);
+        }
 
         var newGuest = _mapper.Map<Guest>(guestDto);
 
@@ -34,27 +36,48 @@ public class GuestService : IGuestService
 
         await _repository.SaveAsync();
 
-        return _mapper.Map<GuestDto>(newGuest);
+        var guestDtoReturn = _mapper.Map<GuestDto>(newGuest);
+        guestDtoReturn.NewGuest = true;
+
+        return guestDtoReturn;
     }
 
-    public Task<GuestDto> GetGuestAsync(int GuestId, bool includeBookings, bool trackChanges = false)
+    public async Task<GuestDto> GetGuestAsync(int guestId, bool trackChanges = false)
     {
-        throw new NotImplementedException();
+        var guest = await CheckGuest(guestId, trackChanges);
+
+        return _mapper.Map<GuestDto>(guest);
     }
 
-    public Task<(IEnumerable<GuestDto>, PageMetadata pageMetadata)> GetGuestsAsync(GuestParameters GuestParameters, bool trackChanges = false)
+    public async Task<(IEnumerable<GuestDto>, PageMetadata pageMetadata)> GetGuestsAsync(
+        GuestParameters guestParams, bool trackChanges = false)
     {
-        throw new NotImplementedException();
+        var guestsWithPageData = await _repository.Guest.GetGuestsAsync(guestParams, trackChanges);
+
+        var guestsDtos = _mapper.Map<IEnumerable<GuestDto>>(guestsWithPageData);
+
+        return (guestsDtos, pageMetadata: guestsWithPageData.PageMetadata);
     }
 
-    public Task RemoveGuestAsync(int GuestId, bool trackChanges = false)
+    public async Task RemoveGuestAsync(int guestId, bool trackChanges = false)
     {
-        throw new NotImplementedException();
+        var guest = await CheckGuest(guestId, trackChanges);
+
+        _repository.Guest.RemoveGuest(guest);
+
+        await _repository.SaveAsync();
     }
 
-    public Task UpdateGuestAsync(int GuestId, GuestUpdateDto GuestForUpdateDto, bool trackChanges = true)
+    public async Task UpdateGuestAsync(int guestId, GuestUpdateDto guestUpdateDto,
+        bool trackChanges = true)
     {
-        throw new NotImplementedException();
+        var guest = await CheckGuest(guestId, trackChanges);
+
+        _mapper.Map(guestUpdateDto, guest);
+
+        _repository.Guest.UpdateModifiedTime(guest);
+
+        await _repository.SaveAsync();
     }
 
     private async Task<Guest> CheckGuest(int guestId, bool trackChanges)

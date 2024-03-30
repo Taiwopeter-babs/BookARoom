@@ -36,8 +36,21 @@ public class MappingProfile : Profile
                 srcGuest => string.Join(' ', srcGuest.FirstName, srcGuest.LastName)
             ))
             .ForMember(destGuest => destGuest.Location, opt => opt.MapFrom(
-                srcGuest => string.Join(' ', srcGuest.State, srcGuest.City, srcGuest.Country)
+                srcGuest => string.Join(", ", srcGuest.State, srcGuest.City, srcGuest.Country)
             ));
+        // .ForMember(destGuest => destGuest.LastBookingDate, opt =>
+        // {
+        //     opt.PreCondition(srcGuest => srcGuest.LastBookingDate != null);
+        //     opt.MapFrom(srcGuest => srcGuest.LastBookingDate.Date);
+        // }
+        // );
+        // .ForMember(destGuest => destGuest.LastBookingDate, opt => opt.MapFrom(
+        //     srcGuest => string.Join(
+        //         '-', srcGuest.LastBookingDate.Hour.ToString(),
+        //         srcGuest.LastBookingDate.Minute.ToString(),
+        //         srcGuest.LastBookingDate.Minute.ToString()
+        //     )
+        // ))
         CreateMap<GuestCreationDto, Guest>();
         CreateMap<GuestUpdateDto, Guest>();
 
