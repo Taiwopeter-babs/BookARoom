@@ -1,35 +1,39 @@
 using System.Linq.Expressions;
 using BookARoom.Data;
 using BookARoom.Interfaces;
+using BookARoom.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace BookARoom.Repository;
 
 public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
 {
-    protected BookARoomContext BookARoomContext;
+    protected BookARoomContext _bookARoomContext;
 
     public RepositoryBase(BookARoomContext bookARoomContext) =>
-        BookARoomContext = bookARoomContext;
+        _bookARoomContext = bookARoomContext;
+
+    public async Task AddItems(List<T> items) => await _bookARoomContext.AddRangeAsync(items);
 
     /// <summary>
     /// Add an entity to the database
     /// </summary>
     /// <param name="entity"></param>
-    public void Create(T entity) => BookARoomContext.Set<T>().Add(entity);
+    public void Create(T entity) => _bookARoomContext.Set<T>().Add(entity);
 
     /// <summary>
     /// Remove an entity from the database
     /// </summary>
     /// <param name="entity"></param>
-    public void Delete(T entity) => BookARoomContext.Set<T>().Remove(entity);
+    public void Delete(T entity) => _bookARoomContext.Set<T>().Remove(entity);
 
     public IQueryable<T> FindAll(bool trackChanges)
     {
         if (!trackChanges)
-            return BookARoomContext.Set<T>().AsNoTracking();
+            return _bookARoomContext.Set<T>().AsNoTracking();
 
-        return BookARoomContext.Set<T>();
+        return _bookARoomContext.Set<T>();
     }
 
     /// <summary>
@@ -43,12 +47,33 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
         bool trackChanges)
     {
         if (!trackChanges)
-            return BookARoomContext.Set<T>()
+            return _bookARoomContext.Set<T>()
             .Where(expression)
             .AsNoTracking();
 
-        return BookARoomContext.Set<T>().Where(expression);
+        return _bookARoomContext.Set<T>().Where(expression);
     }
 
-    public void Update(T entity) => BookARoomContext.Set<T>().Update(entity);
+    public void Update(T entity)
+    {
+        _bookARoomContext.Set<T>().Update(entity);
+        // UpdateTime(entity);
+    }
+
+
+    /// <summary>
+    /// Update the updatedAt field of the modified entity
+    /// </summary>
+    /// <param name="entity"></param>
+    public void UpdateTime(T entity)
+    {
+        var entityEntry = _bookARoomContext.Set<T>().Entry(entity);
+
+        if (entityEntry.State == EntityState.Modified)
+        {
+            // update the updatedAt time
+            _bookARoomContext.Set<T>().Entry(entity)
+                .Property<DateTime?>("UpdatedAt").CurrentValue = DateTime.UtcNow;
+        }
+    }
 }

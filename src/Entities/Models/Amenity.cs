@@ -13,5 +13,6 @@ public class Amenity : BaseModel
     [Required]
     public string? Name { get; set; }
 
-    public List<Room>? Rooms { get; set; }
+    public List<Room> Rooms { get; set; } = [];
+    public List<RoomsAmenities> RoomsAmenities { get; set; } = [];
 }

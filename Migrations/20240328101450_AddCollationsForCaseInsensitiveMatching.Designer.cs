@@ -3,6 +3,7 @@ using System;
 using BookARoom.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BookARoom.Migrations
 {
     [DbContext(typeof(BookARoomContext))]
-    partial class BookARoomContextModelSnapshot : ModelSnapshot
+    [Migration("20240328101450_AddCollationsForCaseInsensitiveMatching")]
+    partial class AddCollationsForCaseInsensitiveMatching
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,7 +35,7 @@ namespace BookARoom.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("createdAt");
 
@@ -42,7 +45,7 @@ namespace BookARoom.Migrations
                         .HasColumnName("name")
                         .UseCollation("my_collation");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updatedAt");
 
@@ -77,7 +80,8 @@ namespace BookARoom.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GuestId");
+                    b.HasIndex("GuestId")
+                        .IsUnique();
 
                     b.ToTable("bookings");
                 });
@@ -103,10 +107,6 @@ namespace BookARoom.Migrations
                         .HasColumnType("character varying(60)")
                         .HasColumnName("country");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("createdAt");
-
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text")
@@ -118,29 +118,17 @@ namespace BookARoom.Migrations
                         .HasColumnType("character varying(128)")
                         .HasColumnName("firstName");
 
-                    b.Property<DateTime?>("LastBookingDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("lastBookingDate");
-
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
                         .HasColumnName("lastName");
 
-                    b.Property<int>("NumberOfBookings")
-                        .HasColumnType("integer")
-                        .HasColumnName("numberOfBookings");
-
                     b.Property<string>("State")
                         .IsRequired()
                         .HasMaxLength(60)
                         .HasColumnType("character varying(60)")
                         .HasColumnName("state");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updatedAt");
 
                     b.HasKey("Id");
 
@@ -156,7 +144,7 @@ namespace BookARoom.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("createdAt");
 
@@ -188,7 +176,7 @@ namespace BookARoom.Migrations
                         .HasColumnType("numeric")
                         .HasColumnName("price");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updatedAt");
 
@@ -197,112 +185,80 @@ namespace BookARoom.Migrations
                     b.ToTable("rooms");
                 });
 
-            modelBuilder.Entity("BookARoom.Models.RoomsAmenities", b =>
+            modelBuilder.Entity("rooms_amenities", b =>
                 {
-                    b.Property<int>("AmenityId")
-                        .HasColumnType("integer")
-                        .HasColumnName("amenityId");
+                    b.Property<int>("AmenitiesId")
+                        .HasColumnType("integer");
 
-                    b.Property<int>("RoomId")
-                        .HasColumnType("integer")
-                        .HasColumnName("roomId");
+                    b.Property<int>("RoomsId")
+                        .HasColumnType("integer");
 
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("createdOn");
+                    b.HasKey("AmenitiesId", "RoomsId");
 
-                    b.HasKey("AmenityId", "RoomId");
+                    b.HasIndex("RoomsId");
 
-                    b.HasIndex("RoomId");
-
-                    b.ToTable("RoomsAmenities");
+                    b.ToTable("rooms_amenities");
                 });
 
-            modelBuilder.Entity("BookARoom.Models.RoomsBookings", b =>
+            modelBuilder.Entity("rooms_bookings", b =>
                 {
-                    b.Property<int>("BookingId")
-                        .HasColumnType("integer")
-                        .HasColumnName("bookingId");
+                    b.Property<int>("BookingsId")
+                        .HasColumnType("integer");
 
-                    b.Property<int>("RoomId")
-                        .HasColumnType("integer")
-                        .HasColumnName("roomId");
+                    b.Property<int>("RoomsId")
+                        .HasColumnType("integer");
 
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("createdOn");
+                    b.HasKey("BookingsId", "RoomsId");
 
-                    b.HasKey("BookingId", "RoomId");
+                    b.HasIndex("RoomsId");
 
-                    b.HasIndex("RoomId");
-
-                    b.ToTable("RoomsBookings");
+                    b.ToTable("rooms_bookings");
                 });
 
             modelBuilder.Entity("BookARoom.Models.Booking", b =>
                 {
                     b.HasOne("BookARoom.Models.Guest", "Guest")
-                        .WithMany("Bookings")
-                        .HasForeignKey("GuestId")
+                        .WithOne("Booking")
+                        .HasForeignKey("BookARoom.Models.Booking", "GuestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Guest");
                 });
 
-            modelBuilder.Entity("BookARoom.Models.RoomsAmenities", b =>
+            modelBuilder.Entity("rooms_amenities", b =>
                 {
-                    b.HasOne("BookARoom.Models.Amenity", "Amenity")
-                        .WithMany("RoomsAmenities")
-                        .HasForeignKey("AmenityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BookARoom.Models.Room", "Room")
-                        .WithMany("RoomsAmenities")
-                        .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Amenity");
-
-                    b.Navigation("Room");
-                });
-
-            modelBuilder.Entity("BookARoom.Models.RoomsBookings", b =>
-                {
-                    b.HasOne("BookARoom.Models.Booking", "Booking")
+                    b.HasOne("BookARoom.Models.Amenity", null)
                         .WithMany()
-                        .HasForeignKey("BookingId")
+                        .HasForeignKey("AmenitiesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BookARoom.Models.Room", "Room")
-                        .WithMany("RoomsBookings")
-                        .HasForeignKey("RoomId")
+                    b.HasOne("BookARoom.Models.Room", null)
+                        .WithMany()
+                        .HasForeignKey("RoomsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Booking");
-
-                    b.Navigation("Room");
                 });
 
-            modelBuilder.Entity("BookARoom.Models.Amenity", b =>
+            modelBuilder.Entity("rooms_bookings", b =>
                 {
-                    b.Navigation("RoomsAmenities");
+                    b.HasOne("BookARoom.Models.Booking", null)
+                        .WithMany()
+                        .HasForeignKey("BookingsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BookARoom.Models.Room", null)
+                        .WithMany()
+                        .HasForeignKey("RoomsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("BookARoom.Models.Guest", b =>
                 {
-                    b.Navigation("Bookings");
-                });
-
-            modelBuilder.Entity("BookARoom.Models.Room", b =>
-                {
-                    b.Navigation("RoomsAmenities");
-
-                    b.Navigation("RoomsBookings");
+                    b.Navigation("Booking");
                 });
 #pragma warning restore 612, 618
         }

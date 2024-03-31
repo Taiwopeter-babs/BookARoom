@@ -2,6 +2,11 @@
 
 namespace BookARoom.Utilities;
 
+
+/// <summary>
+/// A custom validation attribute to check that the decorated datetime
+/// is less than or equal to the property value passed
+/// </summary>
 public class DateTimeLessThan : ValidationAttribute
 {
     private enum DateTimeComparisonResult
@@ -19,13 +24,19 @@ public class DateTimeLessThan : ValidationAttribute
 
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
+        bool isParsed;
         ErrorMessage = ErrorMessageString;
-        string nullValueMessage = "DateTime value is null";
 
         if (value is null)
-            ErrorMessage = nullValueMessage;
+        {
+            return ValidationResult.Success;
+        }
 
-        var currentDateTimeValue = (DateTime)value;
+        isParsed = DateTime.TryParse((string)value, out DateTime currentDateTimeValue);
+        if (!isParsed)
+        {
+            return new ValidationResult(ErrorMessage);
+        }
 
         var propertyToCompare = validationContext.ObjectType.GetProperty(_datetimeToCompare);
         if (propertyToCompare == null)
@@ -33,16 +44,22 @@ public class DateTimeLessThan : ValidationAttribute
             throw new ArgumentException("Property not found");
         }
 
-        var propertyToCompareDateTimeValue = (DateTime)propertyToCompare
+        var propertyToCompareDateString = propertyToCompare
             .GetValue(validationContext.ObjectInstance);
 
+        isParsed = DateTime.TryParse((string)propertyToCompareDateString!,
+            out DateTime propertyToCompareDateTime);
+        if (!isParsed)
+        {
+            return new ValidationResult(ErrorMessage);
+        }
+
         var comparison = (DateTimeComparisonResult)currentDateTimeValue
-            .CompareTo(propertyToCompareDateTimeValue);
+            .CompareTo(propertyToCompareDateTime);
 
-        int comparisonInteger = (int)comparison;
 
-        // Check if date is less than or equal to the comparedProperty
-        if (comparisonInteger <= 0)
+        string compareResult = comparison.ToString();
+        if (compareResult == "TheSame" || compareResult == "Earlier")
         {
             return ValidationResult.Success;
         }

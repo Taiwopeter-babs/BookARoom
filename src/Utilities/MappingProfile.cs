@@ -10,6 +10,8 @@ public class MappingProfile : Profile
     {
         // Amenity Mapping
         CreateMap<Amenity, AmenityDto>();
+        CreateMap<AmenityCreationDto, Amenity>();
+        CreateMap<AmenityUpdateDto, Amenity>();
 
         // Booking Mapping
         CreateMap<Booking, BookingDto>()
@@ -26,19 +28,38 @@ public class MappingProfile : Profile
                     src.CheckoutDate.Minute.ToString()
                     )));
 
+        CreateMap<BookingCreationDto, Booking>();
+
+        // Guest mapping
         CreateMap<Guest, GuestDto>()
             .ForMember(destGuest => destGuest.FullName, opt => opt.MapFrom(
                 srcGuest => string.Join(' ', srcGuest.FirstName, srcGuest.LastName)
             ))
             .ForMember(destGuest => destGuest.Location, opt => opt.MapFrom(
-                srcGuest => string.Join(' ', srcGuest.State, srcGuest.City, srcGuest.Country)
+                srcGuest => string.Join(", ", srcGuest.State, srcGuest.City, srcGuest.Country)
             ));
+        // .ForMember(destGuest => destGuest.LastBookingDate, opt =>
+        // {
+        //     opt.PreCondition(srcGuest => srcGuest.LastBookingDate != null);
+        //     opt.MapFrom(srcGuest => srcGuest.LastBookingDate.Date);
+        // }
+        // );
+        // .ForMember(destGuest => destGuest.LastBookingDate, opt => opt.MapFrom(
+        //     srcGuest => string.Join(
+        //         '-', srcGuest.LastBookingDate.Hour.ToString(),
+        //         srcGuest.LastBookingDate.Minute.ToString(),
+        //         srcGuest.LastBookingDate.Minute.ToString()
+        //     )
+        // ))
+        CreateMap<GuestCreationDto, Guest>();
+        CreateMap<GuestUpdateDto, Guest>();
 
-        CreateMap<BookingForCreationDto, Booking>();
 
         // Room Mapping
         CreateMap<Room, RoomDto>();
-        CreateMap<RoomForCreationDto, Room>();
+        CreateMap<RoomCreationDto, Room>();
+        CreateMap<RoomUpdateDto, Room>()
+            .ForMember(destRoom => destRoom.Amenities, opt => opt.Ignore());
 
     }
 

@@ -38,7 +38,7 @@ public sealed class RoomController : ControllerBase
 
     [HttpPost]
     [ServiceFilter(typeof(ValidateDtoFilter))]
-    public async Task<IActionResult> AddRoom([FromBody] RoomForCreationDto room)
+    public async Task<IActionResult> AddRoom([FromBody] RoomCreationDto room)
     {
         var addedRoom = await _service.RoomService.AddRoomAsync(room);
 
@@ -47,9 +47,17 @@ public sealed class RoomController : ControllerBase
 
     [HttpPut("{id:int}")]
     [ServiceFilter(typeof(ValidateDtoFilter))]
-    public async Task<IActionResult> UpdateRoom(int id, [FromBody] RoomForUpdateDto roomForUpdate)
+    public async Task<IActionResult> UpdateRoom(int id, [FromBody] RoomUpdateDto roomForUpdate)
     {
         await _service.RoomService.UpdateRoomAsync(id, roomForUpdate);
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> RemoveRoom(int id)
+    {
+        await _service.RoomService.RemoveRoomAsync(id);
 
         return NoContent();
     }

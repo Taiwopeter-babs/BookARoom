@@ -7,18 +7,17 @@ public static class RoomRepositoryExtension
 {
 
     /// <summary>
-    /// Extension method to include Bookings in the query. Amenities are included by default if
-    /// includeRelation parameter is set to true
+    /// Extension method to include Amenities in the query.
     /// </summary>
     /// <param name="room"></param>
     /// <returns></returns>
-    public static IQueryable<Room> IncludeBookingsRelation(this IQueryable<Room> room,
+    public static IQueryable<Room> IncludeRelation(this IQueryable<Room> room,
         bool includeAmenity)
     {
-        return !includeAmenity ?
-            room :
-            room
-            .Include(room => room.Amenities);
+        return includeAmenity ?
+            room.Include(room => room.Amenities).AsSplitQuery() :
+            room;
+
     }
 
     /// <summary>

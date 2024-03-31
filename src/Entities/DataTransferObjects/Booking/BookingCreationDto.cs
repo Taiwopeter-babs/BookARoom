@@ -3,7 +3,7 @@ using BookARoom.Utilities;
 
 namespace BookARoom.Dto;
 
-public record class BookingForCreationDto
+public record class BookingCreationDto
 {
     [Required]
     [DateTimeValidation(ErrorMessage = "Invalid datetime value")]
@@ -15,9 +15,9 @@ public record class BookingForCreationDto
     public DateTime CheckoutDate { get; init; }
 
     /// <summary>
-    /// Information on the client booking the room(s)
+    /// Id of the guest making the booking
     /// </summary>
-    public GuestDto? Guest { get; init; }
+    public int GuestId { get; init; }
 
     /// <summary>
     /// The room(s) booked by a client. Contains information on the room id,

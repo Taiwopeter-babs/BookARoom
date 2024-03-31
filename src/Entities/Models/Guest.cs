@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace BookARoom.Models;
 
 [Table("guests")]
-public class Guest
+public class Guest : BaseModel
 {
     [Column("id")]
     public int Id { get; set; }
@@ -12,33 +12,39 @@ public class Guest
     [Column("firstName")]
     [Required]
     [MaxLength(128)]
-    public string? FirstName { get; set; }
+    public required string FirstName { get; set; }
 
     [Column("lastName")]
     [Required]
     [MaxLength(128)]
-    public string? LastName { get; set; }
+    public required string LastName { get; set; }
 
     [Column("email")]
     [Required]
     [EmailAddress]
-    public string? Email { get; set; }
+    public required string Email { get; set; }
 
     [Column("country")]
     [Required]
     [MaxLength(60)]
-    public string? Country { get; set; }
+    public required string Country { get; set; }
 
     [Column("city")]
     [Required]
     [MaxLength(60)]
-    public string? City { get; set; }
+    public required string City { get; set; }
 
     [Column("state")]
     [Required]
     [MaxLength(60)]
-    public string? State { get; set; }
+    public required string State { get; set; }
 
-    // A one to one between a guest and a booking
-    public Booking? Booking { get; set; }
+    [Column("lastBookingDate")]
+    public DateTime? LastBookingDate { get; set; }
+
+    [Column("numberOfBookings")]
+    public int NumberOfBookings { get; set; }
+
+    // A one to many between a guest and bookings
+    public ICollection<Booking> Bookings { get; set; } = [];
 }

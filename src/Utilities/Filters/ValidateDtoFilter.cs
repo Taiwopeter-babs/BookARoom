@@ -14,7 +14,7 @@ public class ValidateDtoFilter : IActionFilter
     /// A delegate anonymous method to select the parameter
     /// </summary>
     private readonly Func<KeyValuePair<string, object?>, bool> selectParameter = arg =>
-        arg.Value != null && arg.Value.ToString().Contains("Dto");
+        arg.Value.ToString().Contains("Dto");
 
     public ValidateDtoFilter() { }
 
@@ -28,6 +28,7 @@ public class ValidateDtoFilter : IActionFilter
         var actionParameter = context.ActionArguments
             .SingleOrDefault(selectParameter)
             .Value;
+
 
         if (actionParameter is null)
         {

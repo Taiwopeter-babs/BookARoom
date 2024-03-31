@@ -1,6 +1,6 @@
 ﻿namespace BookARoom.Dto;
 
-public record class GuestDto
+public record GuestDto
 {
     public int Id { get; init; }
 
@@ -15,4 +15,15 @@ public record class GuestDto
     /// Country + City + State
     /// </summary>
     public string? Location { get; init; }
+
+    public DateTime? LastBookingDate { get; init; }
+
+    public int NumberOfBookings { get; init; }
+
+    /// <summary>
+    /// Gives information on whether a guest is a new or old customer 
+    /// </summary>
+    public bool NewGuest { get; set; } = false;
+
+    public List<BookingDto>? Bookings { get; init; }
 }
