@@ -3,11 +3,11 @@ using BookARoom.Utilities;
 
 namespace BookARoom.Dto;
 
-public record class BookingCreationDto
+public abstract record BookingCommonDto
 {
     [Required]
     [DateTimeValidation(ErrorMessage = "Invalid datetime value")]
-    [DateTimeLessThan("CheckoutDate", ErrorMessage = "CheckinDate cannot be greater than Checkout")]
+    [DateTimeLessThan("CheckoutDate", ErrorMessage = "CheckinDate cannot be greater than CheckoutDate")]
     public DateTime CheckinDate { get; init; }
 
     [Required]
@@ -25,3 +25,8 @@ public record class BookingCreationDto
     /// </summary>
     public List<RoomBookingDto>? Rooms { get; init; }
 }
+
+public record BookingCreationDto : BookingCommonDto { }
+
+
+public record BookingUpdateDto : BookingCommonDto { }

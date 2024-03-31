@@ -41,9 +41,8 @@ public class MappingProfile : Profile
         // .ForMember(destGuest => destGuest.LastBookingDate, opt =>
         // {
         //     opt.PreCondition(srcGuest => srcGuest.LastBookingDate != null);
-        //     opt.MapFrom(srcGuest => srcGuest.LastBookingDate.Date);
-        // }
-        // );
+        //     opt.MapFrom(srcGuest => srcGuest.LastBookingDate!.Date);
+        // });
         // .ForMember(destGuest => destGuest.LastBookingDate, opt => opt.MapFrom(
         //     srcGuest => string.Join(
         //         '-', srcGuest.LastBookingDate.Hour.ToString(),
