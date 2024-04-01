@@ -1,9 +1,26 @@
 ﻿using BookARoom.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookARoom;
 
 public static class BookingRepositoryExtension
 {
+
+    /// <summary>
+    /// An extension method to include the Guest in the query result
+    /// </summary>
+    /// <param name="booking"></param>
+    /// <param name="includeGuest"></param>
+    /// <returns></returns>
+    public static IQueryable<Booking> IncludeGuest(this IQueryable<Booking> booking,
+        bool includeGuest)
+    {
+        return includeGuest ?
+            booking.Include(booking => booking.Guest).AsSplitQuery() :
+            booking;
+
+    }
+
     public static IQueryable<Booking> FilterByBookingDate(this IQueryable<Booking> bookings,
        DateTime bookingDate)
     {

@@ -1,6 +1,9 @@
 using AutoMapper;
 using BookARoom.Dto;
+using BookARoom.Exceptions;
+using BookARoom.Extensions;
 using BookARoom.Interfaces;
+using BookARoom.Models;
 using BookARoom.Utilities;
 
 namespace BookARoom.Services;
@@ -19,29 +22,192 @@ public class BookingService : IBookingService
 
     public async Task<BookingDto> AddBookingAsync(int guestId, BookingCreationDto bookingDto)
     {
-        throw new NotImplementedException();
+        var guest = await CheckGuest(guestId, trackChanges: true);
+
+        Booking bookingEntity = _mapper.Map<Booking>(bookingDto);
+
+        // book rooms that are available
+        await BookRoomsForGuest(guest, bookingEntity, bookingDto.Rooms);
+
+        guest.UpdateGuestFields(bookingEntity);
+
+        _repository.Booking.AddBooking(bookingEntity);
+
+        await _repository.SaveAsync();
+
+        return _mapper.Map<BookingDto>(bookingEntity);
     }
 
     public async Task<BookingDto> GetBookingAsync(int guestId, int bookingId,
         bool trackChanges = false)
     {
-        throw new NotImplementedException();
+        var guest = await CheckGuest(guestId);
+
+        var booking = await CheckBooking(bookingId);
+
+        if (booking.Rooms != null && booking.Rooms.Count > 0)
+        {
+            foreach (var room in booking.Rooms)
+            {
+                Console.WriteLine($"{room.Id} ID Room === {room.Name} ====");
+            }
+        }
+
+        if (booking.GuestId != guest.Id)
+            throw new BookingNotAvailableForGuestException(guestId, bookingId);
+
+        return _mapper.Map<BookingDto>(booking);
     }
 
     public async Task<(IEnumerable<BookingDto>, PageMetadata pageMetadata)> GetBookingsAsync(
-        int guestId, BookingParameters bookingParams, bool trackChanges = false)
+        BookingParameters bookingParams, bool trackChanges = false)
     {
-        throw new NotImplementedException();
+        var bookingsWithPageData = await _repository.Booking.GetBookingsAsync(bookingParams, trackChanges);
+
+        var bookingsDtos = _mapper.Map<IEnumerable<BookingDto>>(bookingsWithPageData);
+
+        return (bookingsDtos, pageMetadata: bookingsWithPageData.PageMetadata);
     }
 
-    public async Task RemoveBookingAsync(int guestId, int bookingId, bool trackChanges = false)
+    public async Task RemoveBookingAsync(int guestId, int bookingId, bool trackChanges = true)
     {
-        throw new NotImplementedException();
+        await CheckGuest(guestId, trackChanges);
+
+        var booking = await CheckBooking(bookingId, includeGuest: false, trackChanges);
+
+        // find all the rooms connected to booking and update
+        await UpdateRoomsForBooking(booking);
+
+        _repository.Booking.RemoveBooking(booking);
+
+        await _repository.SaveAsync();
     }
 
     public async Task UpdateBookingAsync(int guestId, int bookingId,
         BookingUpdateDto bookingUpdateDto, bool trackChanges = true)
     {
         throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// Update the rooms booked by adding the NumberOfRooms to the room
+    /// NumberAvailable field. This ensures that after a booking has been deleted
+    /// or expired, the rooms booked will have their amount available increased.
+    /// </summary>
+    /// <param name="booking"></param>
+    /// <returns></returns>
+    private async Task UpdateRoomsForBooking(Booking booking)
+    {
+        var bookedRoomsIds = booking.RoomsBookings
+            .Select(roomToBook => roomToBook.RoomId)
+            .ToList();
+
+        foreach (var rb in booking.RoomsBookings)
+        {
+            Console.WriteLine($"{rb.RoomId} ID Room === {rb.BookingId} ====");
+        }
+
+        List<Room> bookedRooms = await _repository.Room
+            .FindAvailableRooms(bookedRoomsIds, trackChanges: true);
+
+        Console.WriteLine(bookedRooms.Count);
+
+        foreach (int id in bookedRoomsIds)
+        {
+            Console.WriteLine($"{id} ID Room");
+        }
+
+        foreach (Room room in bookedRooms)
+        {
+            RoomsBookings? roomBookedInfo = booking.RoomsBookings
+                .Find(rb => rb.RoomId.Equals(room.Id));
+
+            Console.WriteLine($"{room.NumberAvailable} before");
+            room.NumberAvailable += roomBookedInfo!.NumberOfRooms;
+            Console.WriteLine($"{room.NumberAvailable} after");
+        }
+
+        await _repository.SaveAsync();
+    }
+
+    /// <summary>
+    /// finds and books rooms for a guest
+    /// </summary>
+    /// <param name="bookingEntity">The booking</param>
+    /// <param name="roomsToBook">A list of <code>RoomBookingDto</code> rooms</param>
+    /// <returns></returns>
+    private async Task BookRoomsForGuest(Guest guest, Booking bookingEntity,
+        List<RoomBookingDto>? roomsToBook)
+    {
+        if (roomsToBook == null || roomsToBook.Count == 0)
+            throw new UnsuccefulBookingGuestException(guest.Id);
+
+        var roomsId = roomsToBook.Select(roomToBook => roomToBook.RoomId).ToList();
+
+        List<Room> availableRooms = await _repository.Room.FindAvailableRooms(roomsId, trackChanges: true);
+
+        if (availableRooms.Count == 0)
+            throw new UnsuccefulBookingGuestException(guest.Id);
+
+        List<RoomsBookings> roomsBookings = new();
+
+        // map room
+        foreach (Room room in availableRooms)
+        {
+            // find the corresponsing RoomBookingDto object
+            var roomDto = roomsToBook.Find(roomDto => roomDto.RoomId.Equals(room.Id));
+            if (roomDto == null)
+                throw new UnsuccefulBookingGuestException(guest.Id);
+
+            // validate number available and the guests number
+            if (
+                room.IsAvailable == false ||
+                room.NumberAvailable < roomDto.NumberRooms
+            )
+                throw new UnsuccefulBookingGuestException(guest.Id);
+
+            int totalGuestsAccomodated = room.MaximumOccupancy * roomDto.NumberRooms;
+            bool canBeBooked = totalGuestsAccomodated >= roomDto.NumberGuests;
+            int validBookingAmount = (int)Math.Ceiling(roomDto.NumberGuests / (decimal)room.MaximumOccupancy);
+
+            if (!canBeBooked)
+                throw new RoomMaximumOccupancyExceededException(room.Id, room.Name, validBookingAmount);
+
+            // update room fields
+            room.NumberAvailable -= roomDto.NumberRooms;
+            room.IsAvailable = room.NumberAvailable > 0;
+
+            // skip duplicate entries
+            if (roomsBookings.Find(rb => rb.RoomId.Equals(room.Id)) != null)
+                continue;
+
+            roomsBookings.Add(new RoomsBookings
+            {
+                Booking = bookingEntity,
+                Room = room,
+                NumberOfRooms = roomDto.NumberRooms
+            });
+        }
+
+        bookingEntity.RoomsBookings.AddRange(roomsBookings);
+        bookingEntity.Guest = guest;
+    }
+
+    private async Task<Guest> CheckGuest(int guestId,
+        bool includeBookings = false, bool trackChanges = false)
+    {
+        var guest = await _repository.Guest.GetGuestAsync(guestId, includeBookings, trackChanges) ??
+            throw new GuestNotFoundException(guestId);
+
+        return guest;
+    }
+
+    private async Task<Booking> CheckBooking(int bookingId, bool includeGuest = true,
+        bool trackChanges = false)
+    {
+        var booking = await _repository.Booking.GetBookingAsync(bookingId, includeGuest, trackChanges) ??
+            throw new BookingNotFoundException(bookingId);
+
+        return booking;
     }
 }

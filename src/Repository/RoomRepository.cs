@@ -45,6 +45,21 @@ public class RoomRepository : RepositoryBase<Room>, IRoomRepository
             roomParams.PageNumber, roomParams.PageSize);
     }
 
+    /// <summary>
+    /// Finds only rooms which are available to be booked
+    /// </summary>
+    /// <param name="roomsId"></param>
+    /// <param name="trackChanges"></param>
+    /// <returns></returns>
+    public async Task<List<Room>> FindAvailableRooms(List<int> roomsId, bool trackChanges = false)
+    {
+
+        return await FindByCondition(
+            room => roomsId.Contains(room.Id) && room.IsAvailable == true, trackChanges
+            )
+            .ToListAsync();
+    }
+
     public void RemoveRoom(Room room) => Delete(room);
 
 

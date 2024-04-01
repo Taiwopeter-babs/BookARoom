@@ -59,6 +59,9 @@ internal sealed class RoomService : IRoomService
 
         _mapper.Map(roomUpdateDto, room);
 
+        if (room.NumberAvailable > 0)
+            room.IsAvailable = true;
+
         _repository.Room.UpdateModifiedTime(room);
 
         await _repository.SaveAsync();

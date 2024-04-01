@@ -36,10 +36,12 @@ public class BookingRepository : RepositoryBase<Booking>, IBookingRepository
             bookingParams.PageNumber, bookingParams.PageSize);
     }
 
-    public async Task<Booking?> GetBookingAsync(int bookingId, bool trackChanges = false)
+    public async Task<Booking?> GetBookingAsync(int bookingId, bool includeGuest = true,
+        bool trackChanges = false)
     {
         return await FindByCondition(booking => booking.Id == bookingId, trackChanges)
-           .SingleOrDefaultAsync();
+            .IncludeGuest(includeGuest)
+            .SingleOrDefaultAsync();
     }
 
     public void RemoveBooking(Booking booking) => Delete(booking);

@@ -7,7 +7,7 @@ public interface IGuestService
 {
     Task<GuestDto> AddGuestAsync(GuestCreationDto guestDto);
 
-    Task<GuestDto> GetGuestAsync(int GuestId, bool trackChanges);
+    Task<GuestDto> GetGuestAsync(int guestId, bool trackChanges);
 
     Task<(IEnumerable<GuestDto>, PageMetadata pageMetadata)> GetGuestsAsync(
         GuestParameters guestParams, bool trackChanges = false);

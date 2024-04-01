@@ -36,6 +36,15 @@ public sealed class GuestController : ControllerBase
         return StatusCode(200, guests);
     }
 
+    // [HttpGet("id/bookings", Name = "GetGuestBookings")]
+    // public async Task<IActionResult> GetGuestBookings(int id)
+    // {
+    //     var guestAndBookings = await _service.BookingService
+    //         .GetGuestBookingsAsync(id, trackChanges: false);
+
+    //     return Ok(guestAndBookings);
+    // }
+
     [HttpPost]
     [ServiceFilter(typeof(ValidateDtoFilter))]
     public async Task<IActionResult> AddGuest([FromBody] GuestCreationDto guest)

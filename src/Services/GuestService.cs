@@ -44,7 +44,7 @@ public class GuestService : IGuestService
 
     public async Task<GuestDto> GetGuestAsync(int guestId, bool trackChanges = false)
     {
-        var guest = await CheckGuest(guestId, trackChanges);
+        var guest = await CheckGuest(guestId, trackChanges: trackChanges);
 
         return _mapper.Map<GuestDto>(guest);
     }
@@ -82,7 +82,7 @@ public class GuestService : IGuestService
 
     private async Task<Guest> CheckGuest(int guestId, bool trackChanges)
     {
-        var guest = await _repository.Guest.GetGuestAsync(guestId, trackChanges) ??
+        var guest = await _repository.Guest.GetGuestAsync(guestId, trackChanges: trackChanges) ??
             throw new GuestNotFoundException(guestId);
 
         return guest;
