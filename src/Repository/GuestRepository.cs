@@ -24,11 +24,9 @@ public class GuestRepository : RepositoryBase<Guest>, IGuestRepository
     /// <param name="includeBookings">Set to false by default to exclude relationship entities</param>
     /// <param name="trackChanges"></param>
     /// <returns></returns>
-    public async Task<Guest?> GetGuestAsync(int guestId, bool includeBookings = true,
-        bool trackChanges = false)
+    public async Task<Guest?> GetGuestAsync(int guestId, bool trackChanges = false)
     {
         return await FindByCondition(guest => guest.Id.Equals(guestId), trackChanges)
-            .IncludeBookings(includeBookings)
             .SingleOrDefaultAsync();
     }
 

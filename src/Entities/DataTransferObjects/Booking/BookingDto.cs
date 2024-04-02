@@ -8,7 +8,7 @@ public record BookingDto
     public DateTime CheckinDate { get; init; }
     public DateTime CheckoutDate { get; init; }
 
-    // public GuestDto? Guest { get; init; }
-    // public List<RoomBookingDto>? RoomsBooked { get; init; }
+    public GuestDto? Guest { get; init; }
+    public List<RoomDto>? RoomsBooked { get; set; }
 
 }

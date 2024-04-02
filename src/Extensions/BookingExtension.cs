@@ -21,6 +21,29 @@ public static class BookingRepositoryExtension
 
     }
 
+    public static IQueryable<Booking> IncludeRooms(this IQueryable<Booking> booking,
+        bool includeRooms)
+    {
+        return includeRooms ?
+            booking.Include(booking => booking.Rooms).AsSplitQuery() :
+            booking;
+
+    }
+
+    public static IQueryable<Booking> GetJoinData(this IQueryable<Booking> booking)
+    {
+        // SELECT b.Id as bookingId, r.Id as roomId, rb.NumberOfRooms as NumberOfRoomsBooked
+        // FROM bookings AS b
+        // INNER JOIN b.RoomsBookings AS rb
+        // ON b.Id = rb.BookingId
+        // INNER JOIN rooms AS r
+        // ON rb.RoomId = r.Id
+        // WHERE b.Id = value AND r.Id = val2
+        return booking.Include(booking => booking.RoomsBookings)
+            .AsSplitQuery();
+
+    }
+
     public static IQueryable<Booking> FilterByBookingDate(this IQueryable<Booking> bookings,
        DateTime bookingDate)
     {

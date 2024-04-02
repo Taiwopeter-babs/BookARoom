@@ -37,14 +37,25 @@ public class BookingRepository : RepositoryBase<Booking>, IBookingRepository
     }
 
     public async Task<Booking?> GetBookingAsync(int bookingId, bool includeGuest = true,
-        bool trackChanges = false)
+         bool includeRooms = true, bool trackChanges = false)
     {
         return await FindByCondition(booking => booking.Id == bookingId, trackChanges)
             .IncludeGuest(includeGuest)
+            .IncludeRooms(includeRooms)
             .SingleOrDefaultAsync();
     }
 
     public void RemoveBooking(Booking booking) => Delete(booking);
 
     public void UpdateModifiedTime(Booking booking) => UpdateModifiedTime(booking);
+
+
+    public async Task<Booking?> GetJoinDataAsync(int bookingId, bool trackChanges = true)
+    {
+        return await FindByCondition(booking => booking.Id == bookingId, trackChanges)
+            .GetJoinData()
+            .SingleOrDefaultAsync();
+    }
+
+
 }

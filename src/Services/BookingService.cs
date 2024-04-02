@@ -43,20 +43,21 @@ public class BookingService : IBookingService
     {
         var guest = await CheckGuest(guestId);
 
-        var booking = await CheckBooking(bookingId);
+        var booking = await CheckBooking(bookingId, includeRooms: true);
 
-        if (booking.Rooms != null && booking.Rooms.Count > 0)
-        {
-            foreach (var room in booking.Rooms)
-            {
-                Console.WriteLine($"{room.Id} ID Room === {room.Name} ====");
-            }
-        }
 
         if (booking.GuestId != guest.Id)
             throw new BookingNotAvailableForGuestException(guestId, bookingId);
 
-        return _mapper.Map<BookingDto>(booking);
+        var bookingEntity = _mapper.Map<BookingDto>(booking);
+
+        if (booking.Rooms != null && booking.Rooms.Count > 0)
+        {
+            var rooms = _mapper.Map<List<RoomDto>>(booking.Rooms);
+            bookingEntity.RoomsBooked = rooms ?? null;
+        }
+
+        return bookingEntity;
     }
 
     public async Task<(IEnumerable<BookingDto>, PageMetadata pageMetadata)> GetBookingsAsync(
@@ -73,7 +74,12 @@ public class BookingService : IBookingService
     {
         await CheckGuest(guestId, trackChanges);
 
-        var booking = await CheckBooking(bookingId, includeGuest: false, trackChanges);
+        // var booking = await CheckBooking(bookingId, includeGuest: false, trackChanges: trackChanges);
+        var booking = await _repository.Booking.GetJoinDataAsync(bookingId);
+        if (booking == null)
+            throw new BookingNotFoundException(bookingId);
+
+        Console.WriteLine(booking.RoomsBookings.Count);
 
         // find all the rooms connected to booking and update
         await UpdateRoomsForBooking(booking);
@@ -98,36 +104,35 @@ public class BookingService : IBookingService
     /// <returns></returns>
     private async Task UpdateRoomsForBooking(Booking booking)
     {
-        var bookedRoomsIds = booking.RoomsBookings
-            .Select(roomToBook => roomToBook.RoomId)
-            .ToList();
+        if (booking.RoomsBookings == null || booking.RoomsBookings!.Count == 0)
+            return;
 
-        foreach (var rb in booking.RoomsBookings)
-        {
-            Console.WriteLine($"{rb.RoomId} ID Room === {rb.BookingId} ====");
-        }
+
+        List<int> bookedRoomsIds = booking.RoomsBookings
+            .Select(roomBooked => roomBooked.RoomId)
+            .ToList();
 
         List<Room> bookedRooms = await _repository.Room
             .FindAvailableRooms(bookedRoomsIds, trackChanges: true);
 
-        Console.WriteLine(bookedRooms.Count);
-
-        foreach (int id in bookedRoomsIds)
-        {
-            Console.WriteLine($"{id} ID Room");
-        }
 
         foreach (Room room in bookedRooms)
         {
-            RoomsBookings? roomBookedInfo = booking.RoomsBookings
-                .Find(rb => rb.RoomId.Equals(room.Id));
+            // match rooms and update NumberAvailable field
+            RoomsBookings? data = booking.RoomsBookings.Find(rb => room.Id.Equals(rb.RoomId));
 
+            if (data == null)
+                continue;
+
+            Console.WriteLine(room.Name);
             Console.WriteLine($"{room.NumberAvailable} before");
-            room.NumberAvailable += roomBookedInfo!.NumberOfRooms;
+
+            room.NumberAvailable += data.NumberOfRooms;
+
             Console.WriteLine($"{room.NumberAvailable} after");
         }
 
-        await _repository.SaveAsync();
+        // await _repository.SaveAsync();
     }
 
     /// <summary>
@@ -154,8 +159,8 @@ public class BookingService : IBookingService
         // map room
         foreach (Room room in availableRooms)
         {
-            // find the corresponsing RoomBookingDto object
-            var roomDto = roomsToBook.Find(roomDto => roomDto.RoomId.Equals(room.Id));
+            // find the corresponding RoomBookingDto object
+            RoomBookingDto? roomDto = roomsToBook.Find(roomDto => roomDto.RoomId.Equals(room.Id));
             if (roomDto == null)
                 throw new UnsuccefulBookingGuestException(guest.Id);
 
@@ -168,14 +173,15 @@ public class BookingService : IBookingService
 
             int totalGuestsAccomodated = room.MaximumOccupancy * roomDto.NumberRooms;
             bool canBeBooked = totalGuestsAccomodated >= roomDto.NumberGuests;
-            int validBookingAmount = (int)Math.Ceiling(roomDto.NumberGuests / (decimal)room.MaximumOccupancy);
+            int validRoomAmount = (int)Math.Ceiling(roomDto.NumberGuests / (decimal)room.MaximumOccupancy);
 
             if (!canBeBooked)
-                throw new RoomMaximumOccupancyExceededException(room.Id, room.Name, validBookingAmount);
+                throw new RoomMaximumOccupancyExceededException(room.Id, room.Name, validRoomAmount);
 
             // update room fields
             room.NumberAvailable -= roomDto.NumberRooms;
             room.IsAvailable = room.NumberAvailable > 0;
+            room.Bookings.Add(bookingEntity);
 
             // skip duplicate entries
             if (roomsBookings.Find(rb => rb.RoomId.Equals(room.Id)) != null)
@@ -184,28 +190,28 @@ public class BookingService : IBookingService
             roomsBookings.Add(new RoomsBookings
             {
                 Booking = bookingEntity,
-                Room = room,
+                RoomId = room.Id,
                 NumberOfRooms = roomDto.NumberRooms
             });
         }
 
         bookingEntity.RoomsBookings.AddRange(roomsBookings);
-        bookingEntity.Guest = guest;
+        // bookingEntity.Guest = guest;
     }
 
-    private async Task<Guest> CheckGuest(int guestId,
-        bool includeBookings = false, bool trackChanges = false)
+    private async Task<Guest> CheckGuest(int guestId, bool trackChanges = false)
     {
-        var guest = await _repository.Guest.GetGuestAsync(guestId, includeBookings, trackChanges) ??
+        var guest = await _repository.Guest.GetGuestAsync(guestId, trackChanges) ??
             throw new GuestNotFoundException(guestId);
 
         return guest;
     }
 
     private async Task<Booking> CheckBooking(int bookingId, bool includeGuest = true,
-        bool trackChanges = false)
+        bool includeRooms = true, bool trackChanges = false)
     {
-        var booking = await _repository.Booking.GetBookingAsync(bookingId, includeGuest, trackChanges) ??
+        var booking = await _repository.Booking
+            .GetBookingAsync(bookingId, includeGuest, includeRooms, trackChanges) ??
             throw new BookingNotFoundException(bookingId);
 
         return booking;
