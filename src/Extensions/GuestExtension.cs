@@ -54,4 +54,14 @@ public static class GuestRepositoryExtension
         return guests
             .Where(guest => guest.LastBookingDate >= lastBookingDate);
     }
+
+    public static Guest UpdateGuestFields(this Guest guest, Booking booking)
+    {
+        guest.NumberOfBookings += 1;
+        guest.LastBookingDate = DateTime.UtcNow;
+
+        guest.Bookings.Add(booking);
+
+        return guest;
+    }
 }

@@ -13,6 +13,14 @@ public sealed class AmenityNotFoundException : NotFoundException
     }
 }
 
+public sealed class BookingNotFoundException : NotFoundException
+{
+    public BookingNotFoundException(int bookingId) :
+        base($"The booking with the id: {bookingId} was not found")
+    {
+    }
+}
+
 public class GuestNotFoundException : NotFoundException
 {
     public GuestNotFoundException(int guestId) :

@@ -12,6 +12,9 @@ public class RoomsBookings
     public int BookingId { get; set; }
     public Booking Booking { get; set; } = null!;
 
+    [Column("numberOfRooms")]
+    public int NumberOfRooms { get; set; }
+
     [Column("createdOn")]
     public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
 }

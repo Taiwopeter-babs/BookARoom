@@ -13,6 +13,5 @@ public record RoomDto
     public DateTime? UpdatedAt { get; init; }
 
     public List<AmenityDto>? Amenities { get; init; }
-    // public List<BookingDto>? Bookings { get; init; }
 }
 

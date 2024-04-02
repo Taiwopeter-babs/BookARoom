@@ -28,4 +28,5 @@ public class Booking
     public Guest Guest { get; set; } = null!;
 
     public List<Room>? Rooms { get; set; }
+    public List<RoomsBookings> RoomsBookings { get; set; } = [];
 }

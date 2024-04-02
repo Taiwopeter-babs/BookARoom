@@ -3,6 +3,7 @@ using System;
 using BookARoom.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BookARoom.Migrations
 {
     [DbContext(typeof(BookARoomContext))]
-    partial class BookARoomContextModelSnapshot : ModelSnapshot
+    [Migration("20240331222935_UpdateBookingsRelationship")]
+    partial class UpdateBookingsRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -231,10 +234,6 @@ namespace BookARoom.Migrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("createdOn");
-
-                    b.Property<int>("NumberOfRooms")
-                        .HasColumnType("integer")
-                        .HasColumnName("numberOfRooms");
 
                     b.HasKey("BookingId", "RoomId");
 

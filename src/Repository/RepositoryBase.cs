@@ -73,7 +73,7 @@ public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : class
         {
             // update the updatedAt time
             _bookARoomContext.Set<T>().Entry(entity)
-                .Property<DateTime?>("UpdatedAt").CurrentValue = DateTime.UtcNow;
+                .Property<DateTime>("UpdatedAt").CurrentValue = DateTime.UtcNow;
         }
     }
 }

@@ -49,6 +49,7 @@ public class DateTimeLessThan : ValidationAttribute
 
         isParsed = DateTime.TryParse((string)propertyToCompareDateString!,
             out DateTime propertyToCompareDateTime);
+
         if (!isParsed)
         {
             return new ValidationResult(ErrorMessage);

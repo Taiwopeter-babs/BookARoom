@@ -23,7 +23,11 @@ public class BookARoomContext : DbContext
         modelBuilder.Entity<Room>()
         .HasMany(room => room.Amenities)
         .WithMany(amenity => amenity.Rooms)
-        .UsingEntity<RoomsAmenities>();
+        .UsingEntity<RoomsAmenities>(
+        // l => l.HasOne<Amenity>(e => e.Amenity).WithMany(e => e.RoomsAmenities),
+        // r => r.HasOne<Room>(e => e.Room).WithMany(e => e.RoomsAmenities)
+        );
+
 
         // Room - bookings join configuration
         modelBuilder.Entity<Room>()
