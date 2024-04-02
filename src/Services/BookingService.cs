@@ -131,8 +131,6 @@ public class BookingService : IBookingService
 
             Console.WriteLine($"{room.NumberAvailable} after");
         }
-
-        // await _repository.SaveAsync();
     }
 
     /// <summary>
@@ -196,7 +194,6 @@ public class BookingService : IBookingService
         }
 
         bookingEntity.RoomsBookings.AddRange(roomsBookings);
-        // bookingEntity.Guest = guest;
     }
 
     private async Task<Guest> CheckGuest(int guestId, bool trackChanges = false)
