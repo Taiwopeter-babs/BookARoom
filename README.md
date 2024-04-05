@@ -35,3 +35,5 @@ docker run -p 127.0.0.1:5098:5098 taiwopeter/bookaroom:development
 If you find this project interesting, I'm open to collaborations and other interesting projects with C#/.NET.
 
 Thank you for visiting.
+
+I'm open to criticisms and suggestions on improvements I could make.
