@@ -15,6 +15,7 @@ public static class BookingRepositoryExtension
     public static IQueryable<Booking> IncludeGuest(this IQueryable<Booking> booking,
         bool includeGuest)
     {
+        // Console.WriteLine(includeGuest);
         return includeGuest ?
             booking.Include(booking => booking.Guest).AsSplitQuery() :
             booking;
@@ -34,6 +35,14 @@ public static class BookingRepositoryExtension
     {
         return booking.Include(booking => booking.RoomsBookings)
             .AsSplitQuery();
+    }
+
+    public static IQueryable<Booking> FilterByGuestId(this IQueryable<Booking> bookings,
+       int guestId)
+    {
+        return guestId > 0 ?
+            bookings.Where(booking => booking.GuestId >= guestId) :
+            bookings;
     }
 
     public static IQueryable<Booking> FilterByBookingDate(this IQueryable<Booking> bookings,
