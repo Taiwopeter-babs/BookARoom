@@ -18,11 +18,17 @@ The idea behind BookARoom is to help accomodation-seeking users book rooms easil
 
 The entity relationship diagram was brought to life with [dbdiagram.io](dbdiagram.io). It's an awesome tool.
 
-## API Documentation
+## API Documentation and Docker
 
 The API is fully documented on postman with example request and responses.
 
 Link: [BookARoom API Documentation](https://documenter.getpostman.com/view/27156707/2sA35LVzEk)
+
+A container image is also available here:
+
+```bash
+docker run -p 127.0.0.1:5098:5098 taiwopeter/bookaroom:development
+```
 
 ## Call to stardom
 
