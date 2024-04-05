@@ -36,6 +36,7 @@ public sealed class GuestController : ControllerBase
         return StatusCode(200, guests);
     }
 
+
     // [HttpGet("id/bookings", Name = "GetGuestBookings")]
     // public async Task<IActionResult> GetGuestBookings(int id)
     // {
@@ -80,5 +81,39 @@ public sealed class GuestController : ControllerBase
         await _service.GuestService.RemoveGuestAsync(id);
 
         return NoContent();
+    }
+
+
+
+    [HttpPost("{guestId:int}/bookings")]
+    [ServiceFilter(typeof(ValidateDtoFilter))]
+    public async Task<IActionResult> AddGuestBooking(int guestId, [FromBody] BookingCreationDto booking)
+    {
+        var addedBooking = await _service.BookingService.AddGuestBookingAsync(guestId, booking);
+
+        return CreatedAtRoute("GetGuestSingleBooking", new { guestId, addedBooking.Id }, addedBooking);
+    }
+
+
+    [HttpGet("{guestId:int}/bookings/{id:int}", Name = "GetGuestSingleBooking")]
+    public async Task<IActionResult> GetSingleGuestBooking(int guestId, int id)
+    {
+        var booking = await _service.BookingService
+            .GetGuestSingleBookingAsync(guestId, id, trackChanges: false);
+
+        return Ok(booking);
+    }
+
+
+    [HttpGet("{guestId:int}/bookings", Name = "GetGuestManyBookings")]
+    public async Task<IActionResult> GetManyGuestBookings(int guestId,
+        [FromQuery] BookingParameters bookingParams)
+    {
+        var (bookings, pageMetaData) = await _service.BookingService
+                .GetGuestManyBookingsAsync(guestId, bookingParams, trackChanges: false);
+
+        Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(pageMetaData));
+
+        return StatusCode(200, bookings);
     }
 }

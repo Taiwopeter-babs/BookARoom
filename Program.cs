@@ -26,6 +26,8 @@ public class Program
 
         var app = builder.Build();
 
+        Console.WriteLine(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
+
         // add exception handler
         app.ConfigureExceptionHandler();
 

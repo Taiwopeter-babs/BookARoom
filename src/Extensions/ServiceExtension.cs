@@ -16,9 +16,23 @@ public static class ServiceExtensions
     /// <param name="configuration"></param>
     public static void ConfigureDatabaseContext(this IServiceCollection services, IConfiguration configuration)
     {
+        string? environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        string? databaseConnectionString;
+
+        if (environment == "Development")
+        {
+            databaseConnectionString = configuration.GetConnectionString("PostgresqlDatabase");
+        }
+        else
+        {
+            databaseConnectionString = configuration.GetConnectionString("PostgresqlDatabaseStaging");
+        }
+
+        // Console.WriteLine($"env ==== {environment}\nconn ==== {databaseConnectionString}");
+
         services.AddDbContext<BookARoomContext>(options =>
             options.UseNpgsql(
-                configuration.GetConnectionString("PostgresqlDatabase"),
+                databaseConnectionString,
                 op => op.MigrationsHistoryTable("BookARoomMigrationsHistory")));
     }
 
