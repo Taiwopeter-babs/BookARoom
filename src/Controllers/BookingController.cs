@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BookAGuest;
 
 [ApiController]
-[Route("api/v1/guests/{guestId:int}/bookings")]
+[Route("api/v1/bookings")]
 public sealed class BookingController : ControllerBase
 {
     private readonly IServiceManager _service;
@@ -18,33 +18,25 @@ public sealed class BookingController : ControllerBase
     }
 
     [HttpGet("{id:int}", Name = "GetBooking")]
-    public async Task<IActionResult> GetBooking(int guestId, int id)
+    public async Task<IActionResult> GetSingleGuestBooking(int id)
     {
         var booking = await _service.BookingService
-            .GetBookingAsync(guestId, id, trackChanges: false);
+            .GetSingleBookingAsync(id, trackChanges: false);
 
         return Ok(booking);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetBookings([FromQuery] BookingParameters bookingParams)
+    public async Task<IActionResult> GetManyBookings([FromQuery] BookingParameters bookingParams)
     {
         var (bookings, pageMetaData) = await _service.BookingService
-                .GetBookingsAsync(bookingParams, trackChanges: false);
+                .GetManyBookingsAsync(bookingParams, trackChanges: false);
 
         Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(pageMetaData));
 
         return StatusCode(200, bookings);
     }
 
-    [HttpPost]
-    [ServiceFilter(typeof(ValidateDtoFilter))]
-    public async Task<IActionResult> AddBooking(int guestId, [FromBody] BookingCreationDto booking)
-    {
-        var addedBooking = await _service.BookingService.AddBookingAsync(guestId, booking);
-
-        return CreatedAtRoute("GetBooking", new { guestId, addedBooking.Id }, addedBooking);
-    }
 
     /// <summary>
     /// Only authorized staff can update a booking
@@ -52,14 +44,14 @@ public sealed class BookingController : ControllerBase
     /// <param name="id"></param>
     /// <param name="GuestForUpdate"></param>
     /// <returns></returns>
-    [HttpPut("{id:int}")]
-    [ServiceFilter(typeof(ValidateDtoFilter))]
-    public async Task<IActionResult> UpdateGuest(int id, [FromBody] GuestUpdateDto guestForUpdate)
-    {
-        await _service.GuestService.UpdateGuestAsync(id, guestForUpdate);
+    // [HttpPut("{id:int}")]
+    // [ServiceFilter(typeof(ValidateDtoFilter))]
+    // public async Task<IActionResult> UpdateGuest(int id, [FromBody] BookingUpdateDto booking)
+    // {
+    //     await _service.BookingService.UpdateBookingAsync(id, booking);
 
-        return NoContent();
-    }
+    //     return NoContent();
+    // }
 
     /// <summary>
     /// Only authorized staff can delete a booking
@@ -67,9 +59,9 @@ public sealed class BookingController : ControllerBase
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> RemoveBooking(int guestId, int id)
+    public async Task<IActionResult> RemoveBooking(int id)
     {
-        await _service.BookingService.RemoveBookingAsync(guestId, id);
+        await _service.BookingService.RemoveBookingAsync(id);
 
         return NoContent();
     }

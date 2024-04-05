@@ -15,6 +15,7 @@ public static class BookingRepositoryExtension
     public static IQueryable<Booking> IncludeGuest(this IQueryable<Booking> booking,
         bool includeGuest)
     {
+        // Console.WriteLine(includeGuest);
         return includeGuest ?
             booking.Include(booking => booking.Guest).AsSplitQuery() :
             booking;
@@ -32,16 +33,16 @@ public static class BookingRepositoryExtension
 
     public static IQueryable<Booking> GetJoinData(this IQueryable<Booking> booking)
     {
-        // SELECT b.Id as bookingId, r.Id as roomId, rb.NumberOfRooms as NumberOfRoomsBooked
-        // FROM bookings AS b
-        // INNER JOIN b.RoomsBookings AS rb
-        // ON b.Id = rb.BookingId
-        // INNER JOIN rooms AS r
-        // ON rb.RoomId = r.Id
-        // WHERE b.Id = value AND r.Id = val2
         return booking.Include(booking => booking.RoomsBookings)
             .AsSplitQuery();
+    }
 
+    public static IQueryable<Booking> FilterByGuestId(this IQueryable<Booking> bookings,
+       int guestId)
+    {
+        return guestId > 0 ?
+            bookings.Where(booking => booking.GuestId >= guestId) :
+            bookings;
     }
 
     public static IQueryable<Booking> FilterByBookingDate(this IQueryable<Booking> bookings,
