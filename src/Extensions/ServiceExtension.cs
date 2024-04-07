@@ -1,8 +1,10 @@
 using BookARoom.Data;
 using BookARoom.Interfaces;
+using BookARoom.Redis;
 using BookARoom.Repository;
 using BookARoom.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 
 namespace BookARoom.Extensions;
 
@@ -67,5 +69,23 @@ public static class ServiceExtensions
     public static void ConfigureServiceManager(this IServiceCollection services)
     {
         services.AddScoped<IServiceManager, ServiceManager>();
+    }
+
+    /// <summary>
+    /// Confiigure redis cache.This service is not available in development mode
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="configuration"></param>
+    public static void ConfigureRedis(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<RedisConfigurationOptions>(configuration.GetSection("Redis"));
+
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.InstanceName = configuration.GetValue<string>("Redis:Name");
+            options.Configuration = configuration.GetValue<string>("Redis:Host");
+        });
+
+        services.AddSingleton<IRedisConnectionFactory, RedisConnectionFactory>();
     }
 }
