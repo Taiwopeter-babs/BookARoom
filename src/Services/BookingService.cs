@@ -4,6 +4,7 @@ using BookARoom.Exceptions;
 using BookARoom.Extensions;
 using BookARoom.Interfaces;
 using BookARoom.Models;
+using BookARoom.Redis;
 using BookARoom.Utilities;
 
 namespace BookARoom.Services;
@@ -12,11 +13,13 @@ public class BookingService : IBookingService
 {
     private IRepositoryManager _repository;
     private IMapper _mapper;
+    private readonly IRedisService _redisService;
 
-    public BookingService(IRepositoryManager repository, IMapper mapper)
+    public BookingService(IRepositoryManager repository, IMapper mapper, IRedisService redisService)
     {
         _repository = repository;
         _mapper = mapper;
+        _redisService = redisService;
     }
 
 
@@ -35,25 +38,15 @@ public class BookingService : IBookingService
 
         await _repository.SaveAsync();
 
-        return _mapper.Map<BookingDto>(bookingEntity);
+        return MapBooking(bookingEntity);
     }
 
     public async Task<BookingDto> GetSingleBookingAsync(int bookingId,
         bool trackChanges = false)
     {
-
         var booking = await CheckBooking(bookingId, includeRooms: true);
 
-
-        var bookingEntity = _mapper.Map<BookingDto>(booking);
-
-        if (booking.Rooms != null && booking.Rooms.Count > 0)
-        {
-            var rooms = _mapper.Map<List<RoomDto>>(booking.Rooms);
-            bookingEntity.RoomsBooked = rooms ?? null;
-        }
-
-        return bookingEntity;
+        return booking;
     }
 
     public async Task<BookingDto> GetGuestSingleBookingAsync(int guestId, int bookingId,
@@ -67,14 +60,7 @@ public class BookingService : IBookingService
         if (booking == null)
             throw new BookingNotAvailableForGuestException(guestId, bookingId);
 
-
-        var bookingEntity = _mapper.Map<BookingDto>(booking);
-
-        if (booking.Rooms != null && booking.Rooms.Count > 0)
-        {
-            var rooms = _mapper.Map<List<RoomDto>>(booking.Rooms);
-            bookingEntity.RoomsBooked = rooms ?? null;
-        }
+        var bookingEntity = MapBooking(booking);
 
         return bookingEntity;
     }
@@ -112,6 +98,10 @@ public class BookingService : IBookingService
         _repository.Booking.RemoveBooking(booking);
 
         await _repository.SaveAsync();
+
+        // remove from cache
+        string stringId = bookingId.ToString();
+        await _redisService.DeleteAsync<BookingDto>(stringId);
     }
 
     public async Task UpdateBookingAsync(int guestId, int bookingId,
@@ -165,7 +155,7 @@ public class BookingService : IBookingService
         if (roomsToBook == null || roomsToBook.Count == 0)
             throw new UnsuccefulBookingGuestException(guest.Id);
 
-        var roomsId = roomsToBook.Select(roomToBook => roomToBook.RoomId).ToList();
+        List<int> roomsId = roomsToBook.Select(roomToBook => roomToBook.RoomId).ToList();
 
         List<Room> availableRooms = await _repository.Room.FindAvailableRooms(roomsId, trackChanges: true);
 
@@ -189,8 +179,9 @@ public class BookingService : IBookingService
             )
                 throw new UnsuccefulBookingGuestException(guest.Id);
 
-            int totalGuestsAccomodated = room.MaximumOccupancy * roomDto.NumberRooms;
-            bool canBeBooked = totalGuestsAccomodated >= roomDto.NumberGuests;
+            int validGuests = room.MaximumOccupancy * roomDto.NumberRooms;
+            bool canBeBooked = validGuests >= roomDto.NumberGuests;
+
             int validRoomAmount = (int)Math.Ceiling(roomDto.NumberGuests / (decimal)room.MaximumOccupancy);
 
             if (!canBeBooked)
@@ -218,19 +209,51 @@ public class BookingService : IBookingService
 
     private async Task<Guest> CheckGuest(int guestId, bool trackChanges = false)
     {
-        var guest = await _repository.Guest.GetGuestAsync(guestId, trackChanges) ??
-            throw new GuestNotFoundException(guestId);
+        Guest guest = await _repository.Guest.GetGuestAsync(guestId, trackChanges) ??
+                 throw new GuestNotFoundException(guestId);
 
         return guest;
     }
 
-    private async Task<Booking> CheckBooking(int bookingId, bool includeGuest = true,
+    private async Task<BookingDto> CheckBooking(int bookingId, bool includeGuest = true,
         bool includeRooms = true, bool trackChanges = false)
     {
-        var booking = await _repository.Booking
-            .GetSingleBookingAsync(bookingId, includeGuest, includeRooms, trackChanges) ??
+        BookingDto? booking;
+        string stringId = bookingId.ToString();
+
+        booking = await _redisService.GetValueAsync<BookingDto>(stringId);
+
+        // Cache miss: Get object from database and save in cache
+        if (booking == null || string.IsNullOrEmpty(booking?.ToString()))
+        {
+            var bookingObj = await _repository.Booking
+                .GetSingleBookingAsync(bookingId, includeGuest, includeRooms, trackChanges) ??
             throw new BookingNotFoundException(bookingId);
 
+            // save in redis cache
+            booking = MapBooking(bookingObj);
+            await _redisService.SaveObjectAsync(stringId, booking);
+        }
+
         return booking;
+    }
+
+    /// <summary>
+    /// Maps the booking Booking type to BookingDto type
+    /// </summary>
+    /// <param name="booking"></param>
+    /// <returns></returns>
+    private BookingDto MapBooking(Booking booking)
+    {
+        var bookingEntity = _mapper.Map<BookingDto>(booking);
+
+        if (booking.Rooms != null && booking.Rooms.Count > 0)
+        {
+            var rooms = _mapper.Map<List<RoomDto>>(booking.Rooms);
+            bookingEntity.RoomsBooked = rooms ?? null;
+        }
+
+        return bookingEntity;
+
     }
 }

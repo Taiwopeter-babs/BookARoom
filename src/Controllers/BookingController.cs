@@ -18,7 +18,7 @@ public sealed class BookingController : ControllerBase
     }
 
     [HttpGet("{id:int}", Name = "GetBooking")]
-    public async Task<IActionResult> GetSingleGuestBooking(int id)
+    public async Task<IActionResult> GetSingleBooking(int id)
     {
         var booking = await _service.BookingService
             .GetSingleBookingAsync(id, trackChanges: false);

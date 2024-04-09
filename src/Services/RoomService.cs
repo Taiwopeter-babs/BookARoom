@@ -3,6 +3,7 @@ using BookARoom.Dto;
 using BookARoom.Exceptions;
 using BookARoom.Interfaces;
 using BookARoom.Models;
+using BookARoom.Redis;
 using BookARoom.Utilities;
 
 namespace BookARoom.Services;
@@ -11,11 +12,13 @@ internal sealed class RoomService : IRoomService
 {
     private readonly IRepositoryManager _repository;
     private readonly IMapper _mapper;
+    private readonly IRedisService _redisService;
 
-    public RoomService(IRepositoryManager repository, IMapper mapper)
+    public RoomService(IRepositoryManager repository, IMapper mapper, IRedisService redisService)
     {
         _repository = repository;
         _mapper = mapper;
+        _redisService = redisService;
     }
 
     public async Task<RoomDto> AddRoomAsync(RoomCreationDto roomDto)
@@ -34,7 +37,7 @@ internal sealed class RoomService : IRoomService
     public async Task<RoomDto> GetRoomAsync(int roomId, bool includeAmenity = true,
         bool trackChanges = false)
     {
-        var room = await CheckIfRoomExists(roomId, includeAmenity, trackChanges);
+        var room = await CheckRoom(roomId, includeAmenity, trackChanges);
 
         return _mapper.Map<RoomDto>(room);
     }
@@ -52,7 +55,7 @@ internal sealed class RoomService : IRoomService
     public async Task UpdateRoomAsync(int roomId, RoomUpdateDto roomUpdateDto,
         bool trackChanges = true)
     {
-        var room = await CheckIfRoomExists(roomId, includeAmenity: true, trackChanges: trackChanges);
+        var room = await CheckRoom(roomId, includeAmenity: true, trackChanges: trackChanges);
 
         // update room amenities if present
         await UpdateRoomAmenities(roomUpdateDto.Amenities, room);
@@ -65,25 +68,66 @@ internal sealed class RoomService : IRoomService
         _repository.Room.UpdateModifiedTime(room);
 
         await _repository.SaveAsync();
+
+        // Update in cache
+        string stringId = roomId.ToString();
+        await _redisService.SaveObjectAsync(stringId, room);
     }
 
     public async Task RemoveRoomAsync(int roomId, bool trackChanges = false)
     {
-        var room = await CheckIfRoomExists(roomId, includeAmenity: false, trackChanges);
+        var room = await CheckRoom(roomId, includeAmenity: false, trackChanges);
 
         _repository.Room.RemoveRoom(room);
 
         await _repository.SaveAsync();
+
+        // remove from cache
+        string stringId = roomId.ToString();
+        await _redisService.DeleteAsync<Room>(stringId);
     }
 
-    private async Task<Room> CheckIfRoomExists(int roomId, bool includeAmenity,
+    private async Task<Room> CheckRoom(int roomId, bool includeAmenity,
         bool trackChanges = false)
     {
-        var room = await _repository.Room.GetRoomAsync(roomId, includeAmenity, trackChanges) ??
-            throw new RoomNotFoundException(roomId);
+        RoomDto? room;
+        Room? roomEntity;
 
-        return room;
+        string stringId = roomId.ToString();
+
+        room = await _redisService.GetValueAsync<RoomDto>(stringId);
+
+        // Cache miss: Get object from database and save in cache
+        if (room == null || string.IsNullOrEmpty(room?.ToString()))
+        {
+            roomEntity = await _repository.Room.GetRoomAsync(roomId, includeAmenity, trackChanges) ??
+                throw new RoomNotFoundException(roomId);
+
+            // save in redis cache
+            room = MapRoomToDto(roomEntity);
+            await _redisService.SaveObjectAsync(stringId, room);
+        }
+        else
+        {
+            roomEntity = MapToRoom(room);
+        }
+
+        return roomEntity;
     }
+
+    /// <summary>
+    /// Maps a room to the Dto type
+    /// </summary>
+    /// <param name="room"></param>
+    /// <returns></returns>
+    private RoomDto MapRoomToDto(Room room) => _mapper.Map<RoomDto>(room);
+
+    /// <summary>
+    /// Maps from RoomDto to the Room object
+    /// </summary>
+    /// <param name="room"></param>
+    /// <returns></returns>
+    private Room MapToRoom(RoomDto room) => _mapper.Map<Room>(room);
 
     /// <summary>
     /// Add or update room's amenities. Amenities which are already present are excluded
@@ -95,9 +139,7 @@ internal sealed class RoomService : IRoomService
     {
         // check if amenities list is not empty or null
         if (amenitiesIds == null || amenitiesIds.Count == 0)
-        {
             return;
-        }
 
         // remove repititions
         var distinctIds = amenitiesIds.Distinct().ToList();
@@ -105,9 +147,7 @@ internal sealed class RoomService : IRoomService
         // find amenities by ids in the list
         List<Amenity> amenitiesInStore = await _repository.Amenity.FindAmenitiesByCondition(distinctIds);
         if (amenitiesInStore == null || amenitiesInStore.Count == 0)
-        {
             return;
-        }
 
         // extract ids of amenities found
         var idsFound = amenitiesInStore.Select(amenity => amenity.Id).ToList();

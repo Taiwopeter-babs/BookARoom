@@ -1,5 +1,7 @@
 using BookARoom.Data;
 using BookARoom.Interfaces;
+using BookARoom.Redis;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookARoom.Repository;
 
