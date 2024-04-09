@@ -4,6 +4,7 @@ using BookARoom.Dto;
 using BookARoom.Utilities;
 using BookARoom.Models;
 using BookARoom.Exceptions;
+using BookARoom.Redis;
 
 namespace BookARoom.Services;
 
@@ -11,12 +12,14 @@ public class GuestService : IGuestService
 {
     private readonly IRepositoryManager _repository;
     private readonly IMapper _mapper;
+    private readonly IRedisService _redisService;
 
 
-    public GuestService(IRepositoryManager repository, IMapper mapper)
+    public GuestService(IRepositoryManager repository, IMapper mapper, IRedisService redisService)
     {
         _repository = repository;
         _mapper = mapper;
+        _redisService = redisService;
     }
 
     public async Task<GuestDto> AddGuestAsync(GuestCreationDto guestDto)
@@ -27,7 +30,7 @@ public class GuestService : IGuestService
 
         if (guest != null)
         {
-            return _mapper.Map<GuestDto>(guest);
+            return MapGuest(guest);
         }
 
         var newGuest = _mapper.Map<Guest>(guestDto);
@@ -36,7 +39,8 @@ public class GuestService : IGuestService
 
         await _repository.SaveAsync();
 
-        var guestDtoReturn = _mapper.Map<GuestDto>(newGuest);
+        var guestDtoReturn = MapGuest(newGuest);
+
         guestDtoReturn.NewGuest = true;
 
         return guestDtoReturn;
@@ -46,7 +50,7 @@ public class GuestService : IGuestService
     {
         var guest = await CheckGuest(guestId, trackChanges: trackChanges);
 
-        return _mapper.Map<GuestDto>(guest);
+        return MapGuest(guest);
     }
 
     public async Task<(IEnumerable<GuestDto>, PageMetadata pageMetadata)> GetGuestsAsync(
@@ -66,6 +70,10 @@ public class GuestService : IGuestService
         _repository.Guest.RemoveGuest(guest);
 
         await _repository.SaveAsync();
+
+        // remove from cache
+        string stringId = guestId.ToString();
+        await _redisService.DeleteAsync<Guest>(stringId);
     }
 
     public async Task UpdateGuestAsync(int guestId, GuestUpdateDto guestUpdateDto,
@@ -78,13 +86,31 @@ public class GuestService : IGuestService
         _repository.Guest.UpdateModifiedTime(guest);
 
         await _repository.SaveAsync();
+
+        // Update in cache
+        string stringId = guestId.ToString();
+        await _redisService.SaveObjectAsync(stringId, guest);
     }
 
-    private async Task<Guest> CheckGuest(int guestId, bool trackChanges)
+    public async Task<Guest> CheckGuest(int guestId, bool trackChanges)
     {
-        var guest = await _repository.Guest.GetGuestAsync(guestId, trackChanges: trackChanges) ??
-            throw new GuestNotFoundException(guestId);
+        Guest? guest;
+        string stringId = guestId.ToString();
+
+        guest = await _redisService.GetValueAsync<Guest>(stringId);
+
+        // Cache miss: Get object from database and save in cache
+        if (guest == null || string.IsNullOrEmpty(guest?.ToString()))
+        {
+            guest = await _repository.Guest.GetGuestAsync(guestId, trackChanges) ??
+                 throw new GuestNotFoundException(guestId);
+
+            // save in redis cache
+            await _redisService.SaveObjectAsync(stringId, guest);
+        }
 
         return guest;
     }
+
+    private GuestDto MapGuest(Guest guest) => _mapper.Map<GuestDto>(guest);
 }

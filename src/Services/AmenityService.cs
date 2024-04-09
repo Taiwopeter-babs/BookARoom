@@ -3,6 +3,7 @@ using BookARoom.Dto;
 using BookARoom.Exceptions;
 using BookARoom.Interfaces;
 using BookARoom.Models;
+using BookARoom.Redis;
 using BookARoom.Utilities;
 
 namespace BookARoom.Services;
@@ -11,13 +12,15 @@ public class AmenityService : IAmenityService
 {
     private readonly IRepositoryManager _repository;
     private readonly IMapper _mapper;
+    private readonly IRedisService _redisService;
 
-
-    public AmenityService(IRepositoryManager repository, IMapper mapper)
+    public AmenityService(IRepositoryManager repository, IMapper mapper, IRedisService redisService)
     {
         _repository = repository;
         _mapper = mapper;
+        _redisService = redisService;
     }
+
 
     public async Task<AmenityDto> AddAmenityAsync(AmenityCreationDto amenityCreationDto)
     {
@@ -57,6 +60,10 @@ public class AmenityService : IAmenityService
         _repository.Amenity.RemoveAmenity(amenity);
 
         await _repository.SaveAsync();
+
+        // remove from cache
+        string stringId = amenityId.ToString();
+        await _redisService.DeleteAsync<Amenity>(stringId);
     }
 
     public async Task UpdateAmenityAsync(int amenityId, AmenityUpdateDto amenityUpdateDto,
@@ -69,12 +76,29 @@ public class AmenityService : IAmenityService
         _repository.Amenity.UpdateModifiedTime(amenity);
 
         await _repository.SaveAsync();
+
+        // Update in cache
+        string stringId = amenityId.ToString();
+        await _redisService.SaveObjectAsync(stringId, amenity);
     }
 
     private async Task<Amenity> CheckAmenity(int amenityId, bool trackChanges)
     {
-        var amenity = await _repository.Amenity.GetAmenityAsync(amenityId, trackChanges) ??
-            throw new AmenityNotFoundException(amenityId);
+        Amenity? amenity;
+        string stringId = amenityId.ToString();
+
+        amenity = await _redisService.GetValueAsync<Amenity>(stringId);
+
+        // Cache miss: Get object from database and save in cache
+        if (amenity == null || string.IsNullOrEmpty(amenity?.ToString()))
+        {
+            amenity = await _repository.Amenity.GetAmenityAsync(amenityId, trackChanges) ??
+                throw new AmenityNotFoundException(amenityId);
+
+            // save in redis cache
+
+            await _redisService.SaveObjectAsync(stringId, amenity);
+        }
 
         return amenity;
     }

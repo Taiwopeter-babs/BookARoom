@@ -11,6 +11,7 @@ public class MappingProfile : Profile
     {
         // Amenity Mapping
         CreateMap<Amenity, AmenityDto>();
+        CreateMap<AmenityDto, Amenity>();
 
         CreateMap<AmenityCreationDto, Amenity>();
 
@@ -40,6 +41,8 @@ public class MappingProfile : Profile
 
         // Room Mapping
         CreateMap<Room, RoomDto>();
+        CreateMap<RoomDto, Room>();
+
         CreateMap<RoomCreationDto, Room>();
         CreateMap<RoomUpdateDto, Room>()
             .ForMember(destRoom => destRoom.Amenities, opt => opt.Ignore());

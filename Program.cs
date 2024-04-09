@@ -20,6 +20,7 @@ public class Program
         builder.Services.ConfigureRepositoryManager();
         builder.Services.ConfigureServiceManager();
         builder.Services.AddAutoMapper(typeof(Program));
+        builder.Services.ConfigureRedis(builder.Configuration);
 
         // Add Dto Validation
         builder.Services.AddScoped<ValidateDtoFilter>();
