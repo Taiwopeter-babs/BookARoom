@@ -16,7 +16,8 @@ public class RedisConnectionFactory : IRedisConnectionFactory
 
     public RedisConnectionFactory(IOptions<RedisConfigurationOptions> redis)
     {
-        _redisConnection = new Lazy<ConnectionMultiplexer>(() => ConnectionMultiplexer.Connect(redis.Value.Host));
+        _redisConnection = new Lazy<ConnectionMultiplexer>(() =>
+            ConnectionMultiplexer.Connect($"{redis.Value.Host}:{redis.Value.Port}"));
     }
 
     /// <summary>

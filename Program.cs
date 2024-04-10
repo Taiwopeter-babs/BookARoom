@@ -22,6 +22,7 @@ public class Program
         builder.Services.AddAutoMapper(typeof(Program));
         builder.Services.ConfigureRedis(builder.Configuration);
 
+
         // Add Dto Validation
         builder.Services.AddScoped<ValidateDtoFilter>();
 

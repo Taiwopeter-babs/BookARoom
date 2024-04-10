@@ -24,6 +24,6 @@ COPY --from=build-image /BookARoomApp/publish .
 
 EXPOSE 5098
 ENV ASPNETCORE_URLS=http://+:5098
-ENV ASPNETCORE_ENVIRONMENT=Staging
+ENV ASPNETCORE_ENVIRONMENT=Development
 
 ENTRYPOINT [ "dotnet", "BookARoom.dll" ]
