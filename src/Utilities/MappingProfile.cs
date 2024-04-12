@@ -20,6 +20,8 @@ public class MappingProfile : Profile
         // Booking Mapping
         CreateMap<Booking, BookingDto>();
 
+        CreateMap<BookingDto, Booking>();
+
         CreateMap<BookingCreationDto, Booking>()
             .ForMember(dest => dest.Rooms, opt => opt.Ignore())
             .ForMember(destBooking => destBooking.CheckinDate, opt => opt.MapFrom(src => src.CheckinDate!.GetUtcDate()))

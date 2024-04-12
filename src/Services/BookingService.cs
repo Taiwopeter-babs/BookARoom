@@ -38,7 +38,7 @@ public class BookingService : IBookingService
 
         await _repository.SaveAsync();
 
-        return MapBooking(bookingEntity);
+        return MapBookingToDto(bookingEntity);
     }
 
     public async Task<BookingDto> GetSingleBookingAsync(int bookingId,
@@ -46,7 +46,7 @@ public class BookingService : IBookingService
     {
         var booking = await CheckBooking(bookingId, includeRooms: true);
 
-        return booking;
+        return MapBookingToDto(booking);
     }
 
     public async Task<BookingDto> GetGuestSingleBookingAsync(int guestId, int bookingId,
@@ -60,7 +60,7 @@ public class BookingService : IBookingService
         if (booking == null)
             throw new BookingNotAvailableForGuestException(guestId, bookingId);
 
-        var bookingEntity = MapBooking(booking);
+        var bookingEntity = MapBookingToDto(booking);
 
         return bookingEntity;
     }
@@ -176,10 +176,12 @@ public class BookingService : IBookingService
         return guest;
     }
 
-    private async Task<BookingDto> CheckBooking(int bookingId, bool includeGuest = true,
+    private async Task<Booking> CheckBooking(int bookingId, bool includeGuest = true,
         bool includeRooms = true, bool trackChanges = false)
     {
         BookingDto? booking;
+        Booking? bookingEntity;
+
         string stringId = bookingId.ToString();
 
         booking = await _redisService.GetValueAsync<BookingDto>(stringId);
@@ -187,24 +189,36 @@ public class BookingService : IBookingService
         // Cache miss: Get object from database and save in cache
         if (booking == null || string.IsNullOrEmpty(booking?.ToString()))
         {
-            var bookingObj = await _repository.Booking
+            bookingEntity = await _repository.Booking
                 .GetSingleBookingAsync(bookingId, includeGuest, includeRooms, trackChanges) ??
             throw new BookingNotFoundException(bookingId);
 
             // save in redis cache
-            booking = MapBooking(bookingObj);
+            booking = MapBookingToDto(bookingEntity);
             await _redisService.SaveObjectAsync(stringId, booking);
         }
+        else
+        {
+            bookingEntity = MapToBooking(booking);
+        }
 
-        return booking;
+        return bookingEntity;
     }
+
+    /// <summary>
+    /// Maps a booking to the Dto type
+    /// </summary>
+    /// <param name="booking"></param>
+    /// <returns></returns>
+    private Booking MapToBooking(BookingDto booking) => _mapper.Map<Booking>(booking);
+
 
     /// <summary>
     /// Maps the booking Booking type to BookingDto type
     /// </summary>
     /// <param name="booking"></param>
     /// <returns></returns>
-    private BookingDto MapBooking(Booking booking)
+    private BookingDto MapBookingToDto(Booking booking)
     {
         var bookingEntity = _mapper.Map<BookingDto>(booking);
 
@@ -215,6 +229,5 @@ public class BookingService : IBookingService
         }
 
         return bookingEntity;
-
     }
 }
