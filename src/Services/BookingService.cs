@@ -224,7 +224,7 @@ public class BookingService : IBookingService
 
         if (booking.Rooms != null && booking.Rooms.Count > 0)
         {
-            var rooms = _mapper.Map<List<RoomDto>>(booking.Rooms);
+            List<RoomDto> rooms = _mapper.Map<List<RoomDto>>(booking.Rooms);
             bookingEntity.RoomsBooked = rooms ?? null;
         }
 
