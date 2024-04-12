@@ -30,7 +30,7 @@ public class BookingService : IBookingService
         Booking bookingEntity = _mapper.Map<Booking>(bookingDto);
 
         // book rooms that are available
-        await BookRoomsForGuest(guest, bookingEntity, bookingDto.Rooms);
+        await BookRoomsForGuest(bookingEntity, guest, bookingDto.Rooms);
 
         guest.UpdateGuestFields(bookingEntity);
 
@@ -149,7 +149,7 @@ public class BookingService : IBookingService
     /// <param name="bookingEntity">The booking</param>
     /// <param name="roomsToBook">A list of <code>RoomBookingDto</code> rooms</param>
     /// <returns></returns>
-    private async Task BookRoomsForGuest(Guest guest, Booking bookingEntity,
+    private async Task BookRoomsForGuest(Booking bookingEntity, Guest guest,
         List<RoomBookingDto>? roomsToBook)
     {
         if (roomsToBook == null || roomsToBook.Count == 0)
@@ -162,50 +162,11 @@ public class BookingService : IBookingService
         if (availableRooms.Count == 0)
             throw new UnsuccefulBookingGuestException(guest.Id);
 
-        List<RoomsBookings> roomsBookings = new();
+        // Add available rooms to booking entity
+        bookingEntity.AddAvailableRoomsForBooking(guest, availableRooms, roomsToBook);
 
-        // map room
-        foreach (Room room in availableRooms)
-        {
-            // find the corresponding RoomBookingDto object
-            RoomBookingDto? roomDto = roomsToBook.Find(roomDto => roomDto.RoomId.Equals(room.Id));
-            if (roomDto == null)
-                throw new UnsuccefulBookingGuestException(guest.Id);
-
-            // validate number available and the guests number
-            if (
-                room.IsAvailable == false ||
-                room.NumberAvailable < roomDto.NumberRooms
-            )
-                throw new UnsuccefulBookingGuestException(guest.Id);
-
-            int validGuests = room.MaximumOccupancy * roomDto.NumberRooms;
-            bool canBeBooked = validGuests >= roomDto.NumberGuests;
-
-            int validRoomAmount = (int)Math.Ceiling(roomDto.NumberGuests / (decimal)room.MaximumOccupancy);
-
-            if (!canBeBooked)
-                throw new RoomMaximumOccupancyExceededException(room.Id, room.Name, validRoomAmount);
-
-            // update room fields
-            room.NumberAvailable -= roomDto.NumberRooms;
-            room.IsAvailable = room.NumberAvailable > 0;
-            room.Bookings.Add(bookingEntity);
-
-            // skip duplicate entries
-            if (roomsBookings.Find(rb => rb.RoomId.Equals(room.Id)) != null)
-                continue;
-
-            roomsBookings.Add(new RoomsBookings
-            {
-                Booking = bookingEntity,
-                RoomId = room.Id,
-                NumberOfRooms = roomDto.NumberRooms
-            });
-        }
-
-        bookingEntity.RoomsBookings.AddRange(roomsBookings);
     }
+
 
     private async Task<Guest> CheckGuest(int guestId, bool trackChanges = false)
     {
