@@ -30,7 +30,7 @@ public class GuestService : IGuestService
 
         if (guest != null)
         {
-            return MapGuest(guest);
+            return MapToGuestDto(guest);
         }
 
         var newGuest = _mapper.Map<Guest>(guestDto);
@@ -39,7 +39,7 @@ public class GuestService : IGuestService
 
         await _repository.SaveAsync();
 
-        var guestDtoReturn = MapGuest(newGuest);
+        var guestDtoReturn = MapToGuestDto(newGuest);
 
         guestDtoReturn.NewGuest = true;
 
@@ -50,7 +50,7 @@ public class GuestService : IGuestService
     {
         var guest = await CheckGuest(guestId, trackChanges: trackChanges);
 
-        return MapGuest(guest);
+        return MapToGuestDto(guest);
     }
 
     public async Task<(IEnumerable<GuestDto>, PageMetadata pageMetadata)> GetGuestsAsync(
@@ -94,23 +94,33 @@ public class GuestService : IGuestService
 
     public async Task<Guest> CheckGuest(int guestId, bool trackChanges)
     {
-        Guest? guest;
+        Guest? guestEntity;
+        GuestDto? guest;
+
         string stringId = guestId.ToString();
 
-        guest = await _redisService.GetValueAsync<Guest>(stringId);
+        guest = await _redisService.GetValueAsync<GuestDto>(stringId);
 
         // Cache miss: Get object from database and save in cache
         if (guest == null || string.IsNullOrEmpty(guest?.ToString()))
         {
-            guest = await _repository.Guest.GetGuestAsync(guestId, trackChanges) ??
+            guestEntity = await _repository.Guest.GetGuestAsync(guestId, trackChanges) ??
                  throw new GuestNotFoundException(guestId);
 
             // save in redis cache
+            guest = MapToGuestDto(guestEntity);
             await _redisService.SaveObjectAsync(stringId, guest);
         }
+        else
+        {
+            // Map to Guest type
+            guestEntity = MapToGuest(guest);
+        }
 
-        return guest;
+        return guestEntity;
     }
 
-    private GuestDto MapGuest(Guest guest) => _mapper.Map<GuestDto>(guest);
+    private Guest MapToGuest(GuestDto guest) => _mapper.Map<Guest>(guest);
+
+    private GuestDto MapToGuestDto(Guest guest) => _mapper.Map<GuestDto>(guest);
 }

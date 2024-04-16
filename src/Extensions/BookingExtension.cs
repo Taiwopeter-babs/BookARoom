@@ -1,4 +1,6 @@
-﻿using BookARoom.Models;
+﻿using BookARoom.Dto;
+using BookARoom.Exceptions;
+using BookARoom.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookARoom;
@@ -61,5 +63,66 @@ public static class BookingRepositoryExtension
       DateTime checkoutDate)
     {
         return bookings.Where(booking => booking.CheckoutDate >= checkoutDate);
+    }
+
+    /// <summary>
+    /// Adds the available rooms found from the list of provided rooms to book to
+    /// the booking entity.
+    /// </summary>
+    /// <param name="bookingEntity">Booking entity to which the rooms booked will be added to</param>
+    /// <param name="guest">Guest naking the booking</param>
+    /// <param name="availableRooms">List of rooms available for booking</param>
+    /// <param name="roomsToBook">List of rooms from which avialable rooms will be picked</param>
+    /// <exception cref="UnsuccefulBookingGuestException">An exception for any unsuccessful booking</exception>
+    /// <exception cref="RoomMaximumOccupancyExceededException">An exception for exceeded rooms' limit</exception>
+    public static void AddAvailableRoomsForBooking(
+        this Booking bookingEntity, Guest guest,
+        List<Room> availableRooms,
+        List<RoomBookingDto> roomsToBook)
+    {
+
+        List<RoomsBookings> roomsBookings = new();
+
+        // map room
+        foreach (Room room in availableRooms)
+        {
+            // find the corresponding RoomBookingDto object
+            RoomBookingDto? roomDto = roomsToBook.Find(roomDto => roomDto.RoomId.Equals(room.Id));
+            if (roomDto == null)
+                throw new UnsuccefulBookingGuestException(guest.Id);
+
+            // validate number available and the guests number
+            if (
+                room.IsAvailable == false ||
+                room.NumberAvailable < roomDto.NumberRooms
+            )
+                throw new UnsuccefulBookingGuestException(guest.Id);
+
+            int validGuests = room.MaximumOccupancy * roomDto.NumberRooms;
+            bool canBeBooked = validGuests >= roomDto.NumberGuests;
+
+            int validRoomAmount = (int)Math.Ceiling(roomDto.NumberGuests / (decimal)room.MaximumOccupancy);
+
+            if (!canBeBooked)
+                throw new RoomMaximumOccupancyExceededException(room.Id, room.Name, validRoomAmount);
+
+            // update room fields
+            room.NumberAvailable -= roomDto.NumberRooms;
+            room.IsAvailable = room.NumberAvailable > 0;
+            room.Bookings.Add(bookingEntity);
+
+            // skip duplicate entries
+            if (roomsBookings.Find(rb => rb.RoomId.Equals(room.Id)) != null)
+                continue;
+
+            roomsBookings.Add(new RoomsBookings
+            {
+                Booking = bookingEntity,
+                RoomId = room.Id,
+                NumberOfRooms = roomDto.NumberRooms
+            });
+        }
+
+        bookingEntity.RoomsBookings.AddRange(roomsBookings);
     }
 }

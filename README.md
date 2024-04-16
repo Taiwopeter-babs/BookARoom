@@ -43,8 +43,8 @@ This sections should be configured in your appsettings.Environment.json file:
     "Name": "bookaroom-redis"
   },
   "ConnectionStrings": {
-    "PostgresqlDatabase": "Host=; Database=bookaroom_db; Username=; Password=",
-    "PostgresqlDatabaseStaging": "Host=; Database=bookaroom_db; Username=; Password="
+    "PostgresqlDatabase": "Host=; Database=; Username=; Password=",
+    "PostgresqlDatabaseStaging": "Host=; Database=; Username=; Password="
   },
 }
 ```
