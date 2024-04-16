@@ -1,5 +1,6 @@
 using BookARoom.Extensions;
 using BookARoom.Utilities;
+using Serilog;
 
 namespace BookARoom;
 
@@ -26,6 +27,10 @@ public class Program
         // Add Dto Validation
         builder.Services.AddScoped<ValidateDtoFilter>();
 
+        // Add Serilog configuration to read configuration from appsettings.json
+        builder.Host.UseSerilog((context, configuration) =>
+            configuration.ReadFrom.Configuration(context.Configuration));
+
         var app = builder.Build();
 
         Console.WriteLine(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
@@ -44,6 +49,9 @@ public class Program
 
             app.UseHsts();
         }
+
+        // Request logging
+        app.UseSerilogRequestLogging();
 
         app.UseHttpsRedirection();
 
